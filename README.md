@@ -13,20 +13,21 @@ Group of small scripts to perform pele analysis.
 # Analysis Tools
 -------------------
 - best_structs.py
-    - **Description:** Parse all the reports found under 'path' and sort them all by the chosen criteria and output the n best structures.
-    - **Requested arguments:**
+    - **Description:**  <br />
+    Parse all the reports found under 'path' and sort them all by the chosen criteria and output the n best structures.
+    - **Requested arguments:** <br />
     `$python best_structs.py <path not to the folder where you have the reports, the previous one (in case you have several epochs)!>`
     e.g. python /home/dsoler/best_structs.py PELE++_Examples/Adaptive/PadaI/PadaI_FULL4/
-    - **Optional arguments:**
+    - **Optional arguments:** <br />
     **-c** "SASA" (report's column you want to order the structures by) --> default: Binding Energy
     **-s** "max or min" ( max to oreder from higher to lower values, min from lower to higher) --> Default: min
     **-f** frequency the Pele's controlfile save the output --> Default:1
     **-n** Strutures to be outputted --> Default:10
-    - **command adaptive :**
+    - **command adaptive :** <br />
     `$ python /home/dsoler/best_structs.py PELE++_Examples/Adaptive/PadaI/PadaI_FULL4/`
-    - **command pele:**
+    - **command pele:** <br />
     `$ python /home/dsoler/best_structs.py PELE++_Examples/Global/PadaI/ -f 4`
-    - **full command pele** (output 20 strutures sorted by sasa from higher to lower values taking into account PELE save the output every 4 steps):
+    - **full command pele** (output 20 strutures sorted by sasa from higher to lower values taking into account PELE save the output every 4 steps): <br />
     `$ python /home/dsoler/best_structs.py PELE++_Examples/Global/PadaI/   -c sasaLig -s max -n 20 -f 4`
-    - **Output:**
-The script will create a folder {criteria}_Structs (where criteria is Binding Energy by default) and inside you will have the structures named as: traj_{criteriaValue}_{epoch}.{report}.{step}.pdb
+    - **Output:** <br />
+	The script will create a folder {criteria}_Structs (where criteria is Binding Energy by default) and inside you will have the structures named as: traj_{criteriaValue}_{epoch}.{report}.{step}.pdb
