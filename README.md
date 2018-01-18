@@ -16,12 +16,12 @@ Group of small scripts to perform pele analysis.
     - **Description:**  <br />
     Parse all the reports found under 'path' and sort them all by the chosen criteria and output the n best structures.
     - **Requested arguments:** <br />
-    `$python best_structs.py <path not to the folder where you have the reports, the previous one (in case you have several epochs)!>`
+    `$python best_structs.py <path not to the folder where you have the reports, the previous one (in case you have several epochs)!>` <br />
     e.g. python /home/dsoler/best_structs.py PELE++_Examples/Adaptive/PadaI/PadaI_FULL4/
     - **Optional arguments:** <br />
-    **-c** "SASA" (report's column you want to order the structures by) --> default: Binding Energy
-    **-s** "max or min" ( max to oreder from higher to lower values, min from lower to higher) --> Default: min
-    **-f** frequency the Pele's controlfile save the output --> Default:1
+    **-c** "SASA" (report's column you want to order the structures by) --> default: Binding Energy <br />
+    **-s** "max or min" ( max to oreder from higher to lower values, min from lower to higher) --> Default: min <br />
+    **-f** frequency the Pele's controlfile save the output --> Default:1 <br />
     **-n** Strutures to be outputted --> Default:10
     - **command adaptive :** <br />
     `$ python /home/dsoler/best_structs.py PELE++_Examples/Adaptive/PadaI/PadaI_FULL4/`
