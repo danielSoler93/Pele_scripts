@@ -3,11 +3,11 @@ Group of small scripts to perform pele analysis.
 
 # Pele's PipeLine
 -------------------------------
-[Protein Preparation for Pele](https://github.com/Jelisa/mut-prep4pele)
-[PlopRotTemp_SCHR2017](https://github.com/miniaoshi/PlopRotTemp_S_2017)
-[Adaptive PELE](https://github.com/AdaptivePELE/AdaptivePELE)
-[PELE(comercial software)](https://pele.bsc.es/pele.wt)
-[Analysis Tools](https://github.com/miniaoshi/Pele_scripts)
+1) [Protein Preparation for Pele](https://github.com/Jelisa/mut-prep4pele)
+2) [PlopRotTemp_SCHR2017](https://github.com/miniaoshi/PlopRotTemp_S_2017)
+3) [Adaptive PELE](https://github.com/AdaptivePELE/AdaptivePELE)
+4) [PELE(comercial software)](https://pele.bsc.es/pele.wt)
+5) [Analysis Tools](https://github.com/miniaoshi/Pele_scripts)
 
 # Analysis Tools
 -------------------
