@@ -8,7 +8,7 @@ Group of small scripts to perform pele analysis.
 3) [Adaptive PELE](https://github.com/AdaptivePELE/AdaptivePELE)
 4) [PELE(comercial software)](https://pele.bsc.es/pele.wt)
 5) [Analysis Tools](https://github.com/miniaoshi/Pele_scripts)
-6) [Ligand Growing] (https://github.com/miniaoshi/Ligand_growing)
+6) [Ligand Growing](https://github.com/miniaoshi/Ligand_growing)
 
 # Analysis Tools
 -------------------
