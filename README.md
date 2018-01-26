@@ -31,3 +31,13 @@ Group of small scripts to perform pele analysis.
     `$ python /home/dsoler/best_structs.py PELE++_Examples/Global/PadaI/   -c sasaLig -s max -n 20 -f 4`
     - **Output:** <br />
 	The script will create a folder {criteria}_Structs (where criteria is Binding Energy by default) and inside you will have the structures named as: traj_{criteriaValue}_{epoch}.{report}.{step}.pdb
+	
+- box.py
+    - **Description:**  <br />
+    Create box given a 3 cooridnates center an a radius.
+    - **Requested arguments:** <br />
+    `$python box.py center_x center_y center_z radius` <br />
+    e.g. python box.py 23 45 28 21
+    - **Optional arguments:** <br />
+    **-f** "file" (Output file) --> default: ./box.pdb
+	The script will create a box.pdb with a cubic box showing pele's conformational space.
