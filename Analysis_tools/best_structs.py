@@ -83,14 +83,14 @@ def main(path, criteria="sasaLig", n_structs=500, sort_order="max", out_freq=FRE
     reports_indexes = min_values.report.tolist()
     step_indexes = min_values[ACCEPTED_STEPS].tolist()
     files_in = ["trajectory_{}.pdb".format(index) for index in reports_indexes]
-    files_out = ["epoch{}_trajectory_{}.{}_{}{}.pdb".format(epoch, report, step, criteria.replace(" ",""), value) \
+    files_out = ["epoch{}_trajectory_{}.{}_{}{}.pdb".format(epoch, report, int(step), criteria.replace(" ",""), value) \
        for epoch, step, report, value in zip(epochs, step_indexes, reports_indexes, values)]
     for f_in, f_out, step, path in zip(files_in, files_out, step_indexes, paths):
         
         #Read Trajetory fro PELE's output
         with open(os.path.join(os.path.dirname(path), f_in), 'r') as input_file:
             file_content = input_file.read()
-        trajectory_selected = re.search('MODEL\s+%d(.*?)ENDMDL' %int(step/out_freq), file_content,re.DOTALL)
+        trajectory_selected = re.search('MODEL\s+%d(.*?)ENDMDL' %int((step+1)/out_freq), file_content,re.DOTALL)
        
         #Output Trajectory
         try:
@@ -100,7 +100,7 @@ def main(path, criteria="sasaLig", n_structs=500, sort_order="max", out_freq=FRE
 
         traj = []
         with open(os.path.join(output,f_out),'w') as f:
-            traj.append("MODEL     %d" %int(step/out_freq))
+            traj.append("MODEL     %d" %int((step+1)/out_freq))
             traj.append(trajectory_selected.group(1))
             traj.append("ENDMDL\n")
             f.write("\n".join(traj))
@@ -140,7 +140,6 @@ def parse_values(reports, n_structs, criteria, sort_order):
                 report_values.insert(1, REPORT, [report_number]*report_values[criteria].size)
                 mixed_values = pd.concat([min_values, report_values])
                 min_values = mixed_values.nsmallest(n_structs, criteria)
-    print(min_values)
     return min_values
 
 if __name__ == "__main__":
