@@ -36,14 +36,14 @@ def parse_args():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("path", type=str, help="Path to Pele's results root folder (Adaptive: path=/Pele/results/ Pele: path=/Pele/)")
-    parser.add_argument("--crit", "-c", type=str, help="Criteria we want to rank and output the strutures for", default= CRITERIA)
+    parser.add_argument("--crit", "-c", type=str, nargs='+', help="Criteria we want to rank and output the strutures for", default= CRITERIA)
     parser.add_argument("--nst", "-n", type=int, help="Number of produced structures" , default=N_STRUCTS)
     parser.add_argument("--sort", "-s", type=str, help="Look for minimum or maximum value --> Options: [min/max]", default=ORDER)
     parser.add_argument("--ofreq", "-f", type=int, help="Every how many steps the trajectory were outputted on PELE", default=FREQ)
     parser.add_argument("--out", "-o", type=str, help="Output Path", default=CRITERIA.replace(" ", ""))
     args = parser.parse_args()
 
-    return args.path, args.crit, args.nst, args.sort, args.ofreq, args.out
+    return args.path, " ".join(args.crit), args.nst, args.sort, args.ofreq, args.out
 
 
 def main(path, criteria="sasaLig", n_structs=500, sort_order="max", out_freq=FREQ, output=CRITERIA.replace(" ", "")):
@@ -121,7 +121,7 @@ def parse_values(reports, n_structs, criteria, sort_order):
                     (ACCEPTED_STEPS, []),
                     (criteria, [])
                     ]
-
+    print(criteria)
     min_values = pd.DataFrame.from_items(INITIAL_DATA)
     for file in reports:
         report_number = os.path.basename(file).split("_")[-1]
@@ -140,6 +140,7 @@ def parse_values(reports, n_structs, criteria, sort_order):
                 report_values.insert(1, REPORT, [report_number]*report_values[criteria].size)
                 mixed_values = pd.concat([min_values, report_values])
                 min_values = mixed_values.nsmallest(n_structs, criteria)
+    print(min_values)
     return min_values
 
 if __name__ == "__main__":
