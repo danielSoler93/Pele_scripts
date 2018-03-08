@@ -5,6 +5,7 @@ import argparse
 import pandas as pd
 import glob
 import re
+import sys
 
 """
 
@@ -81,15 +82,19 @@ def main(path, criteria="sasaLig", n_structs=500, sort_order="max", out_freq=FRE
     values = min_values[criteria].tolist()
     paths = min_values[PATH].tolist()
     epochs = [os.path.basename(os.path.normpath(os.path.dirname(Path))) for Path in paths]
-    reports_indexes = min_values.report.tolist()
+    file_ids = min_values.report.tolist()
     step_indexes = min_values[ACCEPTED_STEPS].tolist()
-    files_in = ["trajectory_{}.pdb".format(index) for index in reports_indexes]
+    # files_ids = ["trajectory_{}.pdb".format(index) for index in reports_indexes]
     files_out = ["epoch{}_trajectory_{}.{}_{}{}.pdb".format(epoch, report, int(step), criteria.replace(" ",""), value) \
-       for epoch, step, report, value in zip(epochs, step_indexes, reports_indexes, values)]
-    for f_in, f_out, step, path in zip(files_in, files_out, step_indexes, paths):
+       for epoch, step, report, value in zip(epochs, step_indexes, file_ids, values)]
+    for f_id, f_out, step, path in zip(file_ids, files_out, step_indexes, paths):
         
         # Read Trajetory from PELE's output
-        with open(os.path.join(os.path.dirname(path), f_in), 'r') as input_file:
+        f_in = glob.glob(os.path.join(os.path.dirname(path), "*trajectory*_{}.pdb".format(f_id)))
+        if len(f_in) == 0:
+            sys.exit("Trajectory {} not found. Be aware that PELE trajectories must contain the label \'trajectory\' in their file name to be detected".format("*trajectory*_{}".format(f_id)))
+        f_in = f_in[0]
+        with open(f_in, 'r') as input_file:
             file_content = input_file.read()
         trajectory_selected = re.search('MODEL\s+%d(.*?)ENDMDL' %int((step+1)/out_freq), file_content,re.DOTALL)
        
