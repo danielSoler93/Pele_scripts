@@ -74,8 +74,7 @@ def main(path, criteria="sasaLig", n_structs=500, sort_order="max", out_freq=FRE
         f_out: Name of the n outpu
     """
 
-    all_reports = glob.glob(os.path.join(path, "*/*report*"))
-    reports = [report for report in all_reports if(os.path.basename(os.path.dirname(report)).isdigit())]
+    reports = glob.glob(os.path.join(path, "*/*report*"))
 
     # Data Mining
     min_values = parse_values(reports, n_structs, criteria, sort_order)
@@ -96,7 +95,7 @@ def main(path, criteria="sasaLig", n_structs=500, sort_order="max", out_freq=FRE
         f_in = f_in[0]
         with open(f_in, 'r') as input_file:
             file_content = input_file.read()
-        trajectory_selected = re.search('MODEL\s+%d(.*?)ENDMDL' %int((step+1)/out_freq), file_content,re.DOTALL)
+        trajectory_selected = re.search('MODEL\s+%d(.*?)ENDMDL' %int((step)/out_freq+1), file_content,re.DOTALL)
        
         # Output Trajectory
         try:
@@ -106,7 +105,7 @@ def main(path, criteria="sasaLig", n_structs=500, sort_order="max", out_freq=FRE
 
         traj = []
         with open(os.path.join(output,f_out),'w') as f:
-            traj.append("MODEL     %d" %int((step+1)/out_freq))
+            traj.append("MODEL     %d" %int((step)/out_freq+1))
             traj.append(trajectory_selected.group(1))
             traj.append("ENDMDL\n")
             f.write("\n".join(traj))
