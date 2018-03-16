@@ -41,3 +41,15 @@ Group of small scripts to perform pele analysis.
     - **Optional arguments:** <br />
     **-f** "file" (Output file) --> default: ./box.pdb
 	The script will create a box.pdb with a cubic box showing pele's conformational space.
+
+- backtrackAdaptiveTrajectory.py
+    - **Description:** <br \>
+     Recreate the trajectory fragments to the led to the discovery of a snapshot, specified by the tuple (epoch, trajectory, snapshot) and write as a pdb file. Should be run from the adaptive simulation folders
+    - **Requested arguments:** <br />
+    `$python backtrackAdaptiveTrajectory.py epoch_number trajectory_number snapshot_number` <br />
+    e.g. python /path/backtrackAdaptiveTrajectory.py 4 12 3
+    - **Optional arguments:** <br />
+    **-o** "output_folder" (name of the folder where to store the pdb file) --> default: "" (store in current folder) <br />
+    **--name** Name of the file to store the trajectory --> Default: "pathway.pdb"
+    - **Output:** <br />
+	The script will create a folder (if asked via the -o option) and inside you will have the file containing the trajectory that lead to snapshot of interest
