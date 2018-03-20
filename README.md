@@ -12,7 +12,7 @@ Group of small scripts to perform pele analysis.
 
 # Analysis Tools
 -------------------
-- best_structs.py
+- bestSturcts.py
     - **Description:**  <br />
     Parse all the folders with reports found under the current directory and sort them all by the chosen criteria and output the n best structures.
     - **Requested arguments:** <br />
@@ -42,7 +42,7 @@ Group of small scripts to perform pele analysis.
     - **Output:** <br />
     The script will create a folder called {criteria} or {output} if -o option. Inside that one, you will have the structures named as: traj_{epoch}.{report}.{step}_{cirteria}_{value}.pdb
 
-- range.py
+- rangeOfValues.py
     - **Description:**  <br />
     Parse all the folders with reports found under the current directory and sort them all by the chosen criteria and output the value range from [users_minimum_value:users_max_value].
     - **Requested arguments:** <br />
