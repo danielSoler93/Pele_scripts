@@ -3,15 +3,17 @@ import argparse
 import pandas as pd
 import glob
 import re
+import sys
 
 """
 
    Description: Parse all the reports found under 'path' and sort them all
-   by the chosen criteria (Binding Energy as default) having into account the
-   frequency our pele control file writes a structure through the -ofreq param
-   (1 by default). To sort from higher to lower value use -f "max" otherwise
-   will rank the structures from lower to higher criteria's values. The number
-   of structures will be ranked is controlled by -i 'nstruct' (default 10).
+   by the chosen critera outputting the desired value range. Be carefull to specify
+   the frequency your pele control file writes a structure through the -ofreq param
+   (1 by default).
+
+   Command: python range.py min_value max_value report_column
+   Command: python range.py -50 0 Binding Energy
 
    For any problem do not hesitate to contact us through the email address written below.
 
@@ -22,83 +24,85 @@ __email__ = "daniel.soler@nostrumbiodiscovery.com"
 
 # DEFAULT VALUES
 ORDER = "min"
-CRITERIA = "Binding Energy"
-OUTPUT = "Structure_{}.pdb"
-N_STRUCTS = 10
+CRITERIA = ["Binding", "Energy"]
 FREQ = 1
 REPORT = "report"
-TRAJ = "trajectory"
 ACCEPTED_STEPS = 'numberOfAcceptedPeleSteps'
-PATH = 'path'
+PATH = os.path.abspath(os.getcwd())
 
 
 def parse_args():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--min", type=int, help="Minimum Value", required=True)
-    parser.add_argument("--max", type=int, help="Maximum Value", required=True)
-    parser.add_argument("path", type=str, help="Path to Pele's results root folder (Adaptive: path=/Pele/results/ Pele: path=/Pele/)")
-    parser.add_argument("--crit", "-c", type=str, help="Criteria we want to rank and output the strutures for", default= CRITERIA)
-    parser.add_argument("--nst", "-n", type=int, help="Number of produced structures", default=N_STRUCTS)
-    parser.add_argument("--ofreq", "-f", type=int, help="Every how many steps the trajectory were outputted on PELE", default=FREQ)
-    parser.add_argument("--out", "-o", type=str, help="Output Path", default=CRITERIA.replace(" ", ""))
+    parser.add_argument("min", type=int, help="Minimum Value Range i.e: -50")
+    parser.add_argument("max", type=int, help="Maximum ValueRange i.e: 0")
+    parser.add_argument("criteria", type=str, nargs='+', help="Criteria we want to rank and output the strutures for. Must be a column of the report. i.e: Binding Energy")
+    parser.add_argument("--ofreq", "-f", type=int, help="Every how many steps the trajectory were outputted on PELE i.e: 4", default=FREQ)
+    parser.add_argument("--out", "-o", type=str, help="Output Path i.e: BE_apo", default="".join(CRITERIA))
+    parser.add_argument("--steps", "-as", type=str, help="Name of the accepted steps column in the report files. i.e: numberOfAcceptedPeleSteps", default=ACCEPTED_STEPS)
     args = parser.parse_args()
+    return args.min, args.max, " ".join(args.criteria), args.ofreq, args.out, args.steps
 
-    return args.min, args.max, args.path, args.crit, args.nst, args.ofreq, args.out
 
-
-def main(min, max, path, criteria="sasaLig", n_structs=500, out_freq=FREQ, output=CRITERIA.replace(" ", "")):
+def main(min, max, criteria, out_freq=FREQ, output="".join(CRITERIA), steps=ACCEPTED_STEPS):
     """
 
-      Description: Rank the traj found in the report files under path
-      by the chosen criteria. Finally, output the best n_structs.
+      Description: Get a range of values from a desire metric
 
       Input:
 
-         Path: Path to look for *report* files in all its subfolders.
+        min: minimum value range
 
-         Criteria: Criteria to sort the structures.
-         Needs to be the name of one of the Pele's report file column.
-         (Default= "Binding Energy")
+        max: maximum value range
 
-         n_structs: Numbers of structures to create.
+        Criteria: Criteria to sort the structures.
+        Needs to be the name of one of the Pele's report file column.
 
-         sort_order: "min" if sorting from lower to higher "max" from high to low.
+        out_freq: Output frequency of our Pele control file
 
-         out_freq: "Output frequency of our Pele control file"
+        output: Name of the output folder where to save the trajectories
 
-     Output:
+        steps: Name of the accepted steps column in your report
 
-        f_out: Name of the n outpu
     """
 
-    # Get Files
-    all_reports = glob.glob(os.path.join(path, "*/*report*"))
-    reports = [report for report in all_reports if(os.path.basename(os.path.dirname(report)).isdigit())]
+    reports = glob.glob(os.path.join(PATH, "*/*report*"))
+    reports = glob.glob(os.path.join(PATH, "*report*")) if not reports else reports
+
+    try:
+        reports[0]
+    except IndexError:
+        raise IndexError("Not report file found. Check you are in adaptive's or Pele root folder")
 
     # Data Mining
-    min_values = parse_values(reports, n_structs, criteria, min, max)
+    min_values = parse_values(reports, criteria, min, max, steps)
     values = min_values[criteria].tolist()
     paths = min_values[PATH].tolist()
     epochs = [os.path.basename(os.path.normpath(os.path.dirname(Path))) for Path in paths]
-    reports_indexes = min_values.report.tolist()
-    step_indexes = min_values[ACCEPTED_STEPS].tolist()
-    files_in = ["trajectory_{}.pdb".format(index) for index in reports_indexes]
-    files_out = ["epoch{}_trajectory_{}.{}_{}{}.pdb".format(epoch, report, int(step), criteria.replace(" ",""), value) \
-       for epoch, step, report, value in zip(epochs, step_indexes, reports_indexes, values)]
-    for f_in, f_out, step, path in zip(files_in, files_out, step_indexes, paths):
-        
-        #Read Trajetory fro PELE's output
-        with open(os.path.join(os.path.dirname(path), f_in), 'r') as input_file:
+    file_ids = min_values.report.tolist()
+    step_indexes = min_values[steps].tolist()
+    try:
+        files_out = ["epoch{}_trajectory_{}.{}_{}{}.pdb".format(epoch, report, int(step), criteria.replace(" ",""), value) \
+            for epoch, step, report, value in zip(epochs, step_indexes, file_ids, values)]
+    except ValueError:
+        raise ValueError("The accepted step column of the report is different than {}. Run the command againd with the option -as <name of your acceptedsteps column>".format(ACCEPTED_STEPS))
+    for f_id, f_out, step, path in zip(file_ids, files_out, step_indexes, paths):
+
+        # Read Trajetory from PELE's output
+        f_in = glob.glob(os.path.join(os.path.dirname(path), "*trajectory*_{}.pdb".format(f_id)))
+        if len(f_in) == 0:
+            sys.exit("Trajectory {} not found. Be aware that PELE trajectories must contain the label \'trajectory\' in their file name to be detected".format("*trajectory*_{}".format(f_id)))
+        f_in = f_in[0]
+        with open(f_in, 'r') as input_file:
             file_content = input_file.read()
-        trajectory_selected = re.search('MODEL\s+%d(.*?)ENDMDL' %int((step+1)/out_freq), file_content,re.DOTALL)
-       
-        #Output Trajectory
+        trajectory_selected = re.search('MODEL\s+%d(.*?)ENDMDL' %int((step)/out_freq+1), file_content,re.DOTALL)
+
+        # Output Trajectory
         try:
             os.mkdir(output)
         except OSError:
             pass
-        
+
         try:
             traj = []
             with open(os.path.join(output,f_out),'w') as f:
@@ -113,17 +117,17 @@ def main(min, max, path, criteria="sasaLig", n_structs=500, out_freq=FREQ, outpu
     return files_out
 
 
-def parse_values(reports, n_structs, criteria, min_value, max_value):
+def parse_values(reports, criteria, min_value, max_value, steps):
     """
 
        Description: Parse the 'reports' and create a sorted array
-       of size n_structs following the criteria chosen by the user.
+       following the criteria chosen by the user.
 
     """
 
     INITIAL_DATA = [(PATH, []),
                     (REPORT, []),
-                    (ACCEPTED_STEPS, []),
+                    (steps, []),
                     (criteria, [])
                     ]
 
@@ -131,7 +135,7 @@ def parse_values(reports, n_structs, criteria, min_value, max_value):
     for file in reports:
         report_number = os.path.basename(file).split("_")[-1]
         data = pd.read_csv(file, sep='    ', engine='python')
-        report_values = data.loc[:, [ACCEPTED_STEPS, criteria]]
+        report_values = data.loc[:, [steps, criteria]]
         report_values.insert(0, PATH, [file]*report_values[criteria].size)
         report_values.insert(1, REPORT, [report_number]*report_values[criteria].size)
         report_values = report_values[report_values[criteria].between(min_value, max_value, inclusive=True)]
@@ -147,5 +151,5 @@ def parse_values(reports, n_structs, criteria, min_value, max_value):
 
 
 if __name__ == "__main__":
-    min, max, path, criteria, interval, out_freq, output = parse_args()
-    main(min, max, path, criteria, interval, out_freq, output)
+    min, max, criteria, out_freq, output, steps = parse_args()
+    main(min, max, criteria, out_freq, output, steps)
