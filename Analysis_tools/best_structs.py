@@ -32,24 +32,25 @@ FREQ = 1
 REPORT = "report"
 TRAJ = "trajectory"
 ACCEPTED_STEPS = 'numberOfAcceptedPeleSteps'
-PATH = 'path'
+DIR = os.path.abspath(os.getcwd())
 
 
 def parse_args():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("path", type=str, help="Path to Pele's results root folder (Adaptive: path=/Pele/results/ Pele: path=/Pele/)")
-    parser.add_argument("--crit", "-c", type=str, nargs='+', help="Criteria we want to rank and output the strutures for", default= CRITERIA)
-    parser.add_argument("--nst", "-n", type=int, help="Number of produced structures" , default=N_STRUCTS)
-    parser.add_argument("--sort", "-s", type=str, help="Look for minimum or maximum value --> Options: [min/max]", default=ORDER)
-    parser.add_argument("--ofreq", "-f", type=int, help="Every how many steps the trajectory were outputted on PELE", default=FREQ)
-    parser.add_argument("--out", "-o", type=str, help="Output Path", default="".join(CRITERIA))
+    parser.add_argument("crit", type=str, nargs='+', help="Criteria we want to rank and output the strutures for. Must be a clumn of the report. i.e: Binding Energy")
+    parser.add_argument("--steps", "-as", type=str, help="Name of the accepted steps column in the report files. i.e: numberOfAcceptedPeleSteps", default=ACCEPTED_STEPS)
+    parser.add_argument("--path", type=str, help="Path to Pele's results root folder i.e: path=/Pele/results/", default=DIR)
+    parser.add_argument("--nst", "-n", type=int, help="Number of produced structures. i.e: 20" , default=N_STRUCTS)
+    parser.add_argument("--sort", "-s", type=str, help="Look for minimum or maximum value --> Options: [min/max]. i.e: max", default=ORDER)
+    parser.add_argument("--ofreq", "-f", type=int, help="Every how many steps the trajectory were outputted on PELE i.e: 4", default=FREQ)
+    parser.add_argument("--out", "-o", type=str, help="Output Path. i.e: BindingEnergies_apo", default="".join(CRITERIA))
     args = parser.parse_args()
 
-    return args.path, " ".join(args.crit), args.nst, args.sort, args.ofreq, args.out
+    return os.path.abspath(args.path), " ".join(args.crit), args.nst, args.sort, args.ofreq, args.out, args.steps
 
 
-def main(path, criteria="sasaLig", n_structs=500, sort_order="max", out_freq=FREQ, output="".join(CRITERIA)):
+def main(path, criteria="sasaLig", n_structs=500, sort_order="max", out_freq=FREQ, output="".join(CRITERIA), steps = ACCEPTED_STEPS):
     """
 
       Description: Rank the traj found in the report files under path
@@ -73,21 +74,25 @@ def main(path, criteria="sasaLig", n_structs=500, sort_order="max", out_freq=FRE
 
         f_out: Name of the n outpu
     """
-
+    print(path)
     reports = glob.glob(os.path.join(path, "*/*report*"))
+    reports = glob.glob(os.path.join(path, "*report*")) if not reports else reports
+    try:
+        reports[0]
+    except IndexError:
+        raise IndexError("Not report file found. Check you are in adaptive's or Pele root folder")
 
     # Data Mining
-    min_values = parse_values(reports, n_structs, criteria, sort_order)
+    min_values = parse_values(reports, n_structs, criteria, sort_order, steps)
     values = min_values[criteria].tolist()
-    paths = min_values[PATH].tolist()
+    paths = min_values[DIR].tolist()
     epochs = [os.path.basename(os.path.normpath(os.path.dirname(Path))) for Path in paths]
     file_ids = min_values.report.tolist()
-    step_indexes = min_values[ACCEPTED_STEPS].tolist()
-    # files_ids = ["trajectory_{}.pdb".format(index) for index in reports_indexes]
+    step_indexes = min_values[steps].tolist()
     files_out = ["epoch{}_trajectory_{}.{}_{}{}.pdb".format(epoch, report, int(step), criteria.replace(" ",""), value) \
        for epoch, step, report, value in zip(epochs, step_indexes, file_ids, values)]
     for f_id, f_out, step, path in zip(file_ids, files_out, step_indexes, paths):
-        
+
         # Read Trajetory from PELE's output
         f_in = glob.glob(os.path.join(os.path.dirname(path), "*trajectory*_{}.pdb".format(f_id)))
         if len(f_in) == 0:
@@ -96,7 +101,7 @@ def main(path, criteria="sasaLig", n_structs=500, sort_order="max", out_freq=FRE
         with open(f_in, 'r') as input_file:
             file_content = input_file.read()
         trajectory_selected = re.search('MODEL\s+%d(.*?)ENDMDL' %int((step)/out_freq+1), file_content,re.DOTALL)
-       
+
         # Output Trajectory
         try:
             os.mkdir(output)
@@ -113,7 +118,7 @@ def main(path, criteria="sasaLig", n_structs=500, sort_order="max", out_freq=FRE
     return files_out
 
 
-def parse_values(reports, n_structs, criteria, sort_order):
+def parse_values(reports, n_structs, criteria, sort_order, steps):
     """
 
        Description: Parse the 'reports' and create a sorted array
@@ -121,9 +126,9 @@ def parse_values(reports, n_structs, criteria, sort_order):
 
     """
 
-    INITIAL_DATA = [(PATH, []),
+    INITIAL_DATA = [(DIR, []),
                     (REPORT, []),
-                    (ACCEPTED_STEPS, []),
+                    (steps, []),
                     (criteria, [])
                     ]
     print(criteria)
@@ -131,27 +136,23 @@ def parse_values(reports, n_structs, criteria, sort_order):
     for file in reports:
         report_number = os.path.basename(file).split("_")[-1]
         data = pd.read_csv(file, sep='    ', engine='python')
-        selected_data = data.loc[:, [ACCEPTED_STEPS,criteria]]
+        selected_data = data.loc[:, [steps ,criteria]]
         if sort_order == "min":
                 report_values =  selected_data.nsmallest(n_structs, criteria)
-                report_values.insert(0, PATH, [file]*report_values[criteria].size)
+                report_values.insert(0, DIR, [file]*report_values[criteria].size)
                 report_values.insert(1, REPORT, [report_number]*report_values[criteria].size)
                 mixed_values = pd.concat([min_values, report_values])
                 min_values = mixed_values.nsmallest(n_structs, criteria)
 
         else:
-                report_values =  selected_data.nsmallest(n_structs, criteria)
-                report_values.insert(0, PATH, [file]*report_values[criteria].size)
+                report_values =  selected_data.nlargest(n_structs, criteria)
+                report_values.insert(0, DIR, [file]*report_values[criteria].size)
                 report_values.insert(1, REPORT, [report_number]*report_values[criteria].size)
                 mixed_values = pd.concat([min_values, report_values])
-                min_values = mixed_values.nsmallest(n_structs, criteria)
+                min_values = mixed_values.nlargest(n_structs, criteria)
     print(min_values)
     return min_values
 
 if __name__ == "__main__":
-    path, criteria, interval, sort_order, out_freq, output = parse_args()
-    # --------------------------------------------------
-    # Get absolute path (Marti Municoy, march, 7, 2018)
-    path = os.path.abspath(path)
-    # --------------------------------------------------
-    main(path, criteria, interval, sort_order, out_freq, output)
+    path, criteria, interval, sort_order, out_freq, output, steps = parse_args()
+    main(path, criteria, interval, sort_order, out_freq, output, steps)

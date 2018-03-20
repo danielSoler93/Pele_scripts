@@ -7,12 +7,13 @@ from string import Template
 KEYWORDS = ["CENTER_X", "CENTER_Y", "CENTER_Z", "V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8"]
 COORD = "{:>11.3f}{:>8.3f}{:>8.3f}"
 CENTER = "{:.3f}"
-BOX="box_template.pdb"
+DIR=os.path.dirname(os.path.abspath(__file__))
+BOX=os.path.join(DIR,"box_template.pdb")
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Create pdb-box from center and radius")
-    parser.add_argument("center", nargs='+', type=int,  help='center of the box')
+    parser.add_argument("center", nargs='+', type=float,  help='center of the box')
     parser.add_argument("radius",  type= int, help='radius of the box')
     parser.add_argument("-f", "--file", default= "box.pdb", help='output file')
     args = parser.parse_args()
