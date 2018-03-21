@@ -75,7 +75,6 @@ def main(path, criteria="sasaLig", n_structs=500, sort_order="max", out_freq=FRE
 
         f_out: Name of the n outpu
     """
-    print(path)
     reports = glob.glob(os.path.join(path, "*/*report*"))
     reports = glob.glob(os.path.join(path, "*report*")) if not reports else reports
     reports = filter_non_numerical_folders(reports, numfolders)
@@ -133,7 +132,6 @@ def parse_values(reports, n_structs, criteria, sort_order, steps):
                     (steps, []),
                     (criteria, [])
                     ]
-    print(criteria)
     min_values = pd.DataFrame.from_items(INITIAL_DATA)
     for file in reports:
         report_number = os.path.basename(file).split("_")[-1]
@@ -152,7 +150,6 @@ def parse_values(reports, n_structs, criteria, sort_order, steps):
                 report_values.insert(1, REPORT, [report_number]*report_values[criteria].size)
                 mixed_values = pd.concat([min_values, report_values])
                 min_values = mixed_values.nlargest(n_structs, criteria)
-    print(min_values)
     return min_values
 
 def filter_non_numerical_folders(reports, numfolders):

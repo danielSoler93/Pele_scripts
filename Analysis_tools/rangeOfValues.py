@@ -145,7 +145,6 @@ def parse_values(reports, criteria, min_value, max_value, steps):
         except ValueError:
             values = report_values
     values.sort_values(criteria, ascending=False)
-    print(values)
     return values
 
 def filter_non_numerical_folders(reports, numfolders):
