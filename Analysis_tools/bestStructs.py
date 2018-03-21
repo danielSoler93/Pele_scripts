@@ -45,12 +45,13 @@ def parse_args():
     parser.add_argument("--sort", "-s", type=str, help="Look for minimum or maximum value --> Options: [min/max]. i.e: max", default=ORDER)
     parser.add_argument("--ofreq", "-f", type=int, help="Every how many steps the trajectory were outputted on PELE i.e: 4", default=FREQ)
     parser.add_argument("--out", "-o", type=str, help="Output Path. i.e: BindingEnergies_apo", default="".join(CRITERIA))
+    parser.add_argument("--numfolders", "-nm", action="store_true", help="Not to parse non numerical folders")
     args = parser.parse_args()
 
-    return os.path.abspath(args.path), " ".join(args.crit), args.nst, args.sort, args.ofreq, args.out, args.steps
+    return os.path.abspath(args.path), " ".join(args.crit), args.nst, args.sort, args.ofreq, args.out, args.steps, args.numfolders
 
 
-def main(path, criteria="sasaLig", n_structs=500, sort_order="max", out_freq=FREQ, output="".join(CRITERIA), steps = ACCEPTED_STEPS):
+def main(path, criteria="sasaLig", n_structs=500, sort_order="max", out_freq=FREQ, output="".join(CRITERIA), steps = ACCEPTED_STEPS, numfolders=False):
     """
 
       Description: Rank the traj found in the report files under path
@@ -77,6 +78,7 @@ def main(path, criteria="sasaLig", n_structs=500, sort_order="max", out_freq=FRE
     print(path)
     reports = glob.glob(os.path.join(path, "*/*report*"))
     reports = glob.glob(os.path.join(path, "*report*")) if not reports else reports
+    reports = filter_non_numerical_folders(reports, numfolders)
     try:
         reports[0]
     except IndexError:
@@ -153,6 +155,18 @@ def parse_values(reports, n_structs, criteria, sort_order, steps):
     print(min_values)
     return min_values
 
+def filter_non_numerical_folders(reports, numfolders):
+    """
+    Filter non numerical folders among
+    the folders to parse
+    """
+    if(numfolders):
+        new_reports = [report for report in reports if(os.path.basename(os.path.dirname(report)).isdigit())]
+        return new_reports
+    else:
+        return reports
+
+
 if __name__ == "__main__":
-    path, criteria, interval, sort_order, out_freq, output, steps = parse_args()
-    main(path, criteria, interval, sort_order, out_freq, output, steps)
+    path, criteria, interval, sort_order, out_freq, output, steps, numfolders = parse_args()
+    main(path, criteria, interval, sort_order, out_freq, output, steps, numfolders)
