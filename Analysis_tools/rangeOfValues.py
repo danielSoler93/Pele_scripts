@@ -34,17 +34,18 @@ PATH = os.path.abspath(os.getcwd())
 def parse_args():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("min", type=int, help="Minimum Value Range i.e: -50")
-    parser.add_argument("max", type=int, help="Maximum ValueRange i.e: 0")
+    parser.add_argument("min", type=float, help="Minimum Value Range i.e: -50")
+    parser.add_argument("max", type=float, help="Maximum ValueRange i.e: 0")
     parser.add_argument("criteria", type=str, nargs='+', help="Criteria we want to rank and output the strutures for. Must be a column of the report. i.e: Binding Energy")
     parser.add_argument("--ofreq", "-f", type=int, help="Every how many steps the trajectory were outputted on PELE i.e: 4", default=FREQ)
     parser.add_argument("--out", "-o", type=str, help="Output Path i.e: BE_apo", default="".join(CRITERIA))
     parser.add_argument("--steps", "-as", type=str, help="Name of the accepted steps column in the report files. i.e: numberOfAcceptedPeleSteps", default=ACCEPTED_STEPS)
+    parser.add_argument("--numfolders", "-nm", action="store_true", help="Not to parse non numerical folders")
     args = parser.parse_args()
-    return args.min, args.max, " ".join(args.criteria), args.ofreq, args.out, args.steps
+    return args.min, args.max, " ".join(args.criteria), args.ofreq, args.out, args.steps, args.numfolders
 
 
-def main(min, max, criteria, out_freq=FREQ, output="".join(CRITERIA), steps=ACCEPTED_STEPS):
+def main(min, max, criteria, out_freq=FREQ, output="".join(CRITERIA), steps=ACCEPTED_STEPS, numfolders=False):
     """
 
       Description: Get a range of values from a desire metric
@@ -68,7 +69,7 @@ def main(min, max, criteria, out_freq=FREQ, output="".join(CRITERIA), steps=ACCE
 
     reports = glob.glob(os.path.join(PATH, "*/*report*"))
     reports = glob.glob(os.path.join(PATH, "*report*")) if not reports else reports
-
+    reports = filter_non_numerical_folders(reports, numfolders)
     try:
         reports[0]
     except IndexError:
@@ -144,12 +145,20 @@ def parse_values(reports, criteria, min_value, max_value, steps):
         except ValueError:
             values = report_values
     values.sort_values(criteria, ascending=False)
-    print(values)
     return values
 
-
+def filter_non_numerical_folders(reports, numfolders):
+    """
+    Filter non numerical folders among
+    the folders to parse
+    """
+    if(numfolders):
+        new_reports = [report for report in reports if(os.path.basename(os.path.dirname(report)).isdigit())]
+        return new_reports
+    else:
+        return reports
 
 
 if __name__ == "__main__":
-    min, max, criteria, out_freq, output, steps = parse_args()
-    main(min, max, criteria, out_freq, output, steps)
+    min, max, criteria, out_freq, output, steps, numfolders = parse_args()
+    main(min, max, criteria, out_freq, output, steps, numfolders)
