@@ -32,6 +32,8 @@ Group of small scripts to perform pele analysis.
     i.e: -n 10<br />
     **-o** Output Folder --> Default Criteria's name <br />
     i.e: -o PRR_apo_Binding_energies
+    **-nm** Non numerical folders --> Default: False <br />
+    i.e: -nm
 
     - **command adaptive :** <br />
     $ python /home/dsoler/best_structs.py PELE++_Examples/Adaptive/PadaI/PadaI_FULL4/
