@@ -19,7 +19,7 @@ class cd:
         os.chdir(self.savedPath)
 
 
-def parse(control_file, adaptive=False):
+def parse(control_file, pele_file, adaptive=False):
     """
     Parse control_file and retrieve fields
     """
@@ -31,7 +31,11 @@ def parse(control_file, adaptive=False):
         last_epoch = simulationrunnerBlock["params"][blockNames.SimulationParams.iterations]
         cluster_object = os.path.join(str(last_epoch), "clustering/object.pkl")
         pele_control_file = simulationrunnerBlock["params"][blockNames.SimulationParams.templetizedControlFile]
-        _, report_name, center, radius = parse_pele(pele_control_file)
+        try:
+            _, report_name, center, radius = parse_pele(pele_control_file)
+        except IOError:
+            pele_control_file = pele_file
+            _, report_name, center, radius = parse_pele(pele_control_file)
         report = os.path.join(path, "{}/{}_1".format(0, report_name))
         metrics, steps = parse_report(report)
         return path, metrics, steps, cluster_object, center, radius

@@ -17,10 +17,11 @@ METRICS_FOLDER = os.path.join(ANALYSIS_FOLDER, "metrics")
 def parse_args():
     parser = argparse.ArgumentParser(description='Run PELE analysis')
     parser.add_argument('control_file', type=str, help='Control_file from the job to analyze. Use -a flag if it is an adaptive job.')
+    parser.add_argument('--pele_file',"-pf", type=str, help='PELE Control_file from the job to analyze. Use -a flag if it is an adaptive job.', default=None)
     parser.add_argument('--adaptive', "-a", action='store_true', help='Analyze Adaptive PELE')
     args = parser.parse_args()
 
-    return args.control_file, args.adaptive
+    return args.control_file, args.pele_file, args.adaptive
 
 
 def writeClustering(cluster_object, path):
@@ -37,9 +38,11 @@ def writeClustering(cluster_object, path):
             raise IOError("Non clustering file found in last epoch. Adaptive did not finish properly")
 
 
-def main(control_file, adaptive=False):
-
-    path, metrics, step_column, cluster_object, center, radius = ut.parse(control_file, adaptive=adaptive)
+def main(control_file, pele_file=None, adaptive=False):
+    try:
+        path, metrics, step_column, cluster_object, center, radius = ut.parse(control_file, pele_file, adaptive=adaptive)
+    except TypeError:
+        raise TypeError("Pele control file not found. Use an external one with option -pf")
     with ut.cd(path):
         if adaptive:
             numberOfClusters.main(CLUSTER_FILENAME, OUTPUT_CLUSTER)
@@ -60,5 +63,5 @@ def main(control_file, adaptive=False):
 
 
 if __name__ == "__main__":
-    control_file, is_adaptive = parse_args()
-    main(control_file, is_adaptive)
+    control_file, pele_file, is_adaptive = parse_args()
+    main(control_file, pele_file, is_adaptive)
