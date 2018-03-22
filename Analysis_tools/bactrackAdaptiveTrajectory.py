@@ -32,9 +32,7 @@ def parseArguments():
     args = parser.parse_args()
     return args.trajectory, args.snapshot, args.epoch, args.o, args.name
 
-
-if __name__ == "__main__":
-    trajectory, snapshot, epoch, outputPath, out_filename = parseArguments()
+def main(trajectory, snapshot, epoch, outputPath, out_filename):
     if outputPath is not None:
         outputPath = os.path.join(outputPath, "")
         if not os.path.exists(outputPath):
@@ -68,3 +66,40 @@ if __name__ == "__main__":
     sys.stderr.write("Writing pathway...\n")
     with open(outputPath+out_filename, "a") as f:
         f.write("ENDMDL\n".join(itertools.chain.from_iterable(pathway)))
+
+if __name__ == "__main__":
+    trajectory, snapshot, epoch, outputPath, out_filename = parseArguments()
+    main(trajectory, snapshot, epoch, outputPath, out_filename)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
