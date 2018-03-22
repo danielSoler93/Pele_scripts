@@ -1,4 +1,6 @@
 *.pyc
+*.sw[onp]
 Analysis_tools/*.pyc
+*.sw[onp]
 Utilities/*.pyc
 Utilities/*.sw[onp]
