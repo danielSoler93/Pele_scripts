@@ -1,6 +1,7 @@
 #!/usr/bin/python2.7
 
 import os
+import errno
 import argparse
 import pandas as pd
 import glob
@@ -51,7 +52,7 @@ def parse_args():
     return os.path.abspath(args.path), " ".join(args.crit), args.nst, args.sort, args.ofreq, args.out, args.steps, args.numfolders
 
 
-def main(path, criteria="sasaLig", n_structs=500, sort_order="max", out_freq=FREQ, output="".join(CRITERIA), steps = ACCEPTED_STEPS, numfolders=False):
+def main(criteria, path=DIR, n_structs=10, sort_order="min", out_freq=FREQ, output="".join(CRITERIA), steps = ACCEPTED_STEPS, numfolders=False):
     """
 
       Description: Rank the traj found in the report files under path
@@ -105,18 +106,22 @@ def main(path, criteria="sasaLig", n_structs=500, sort_order="max", out_freq=FRE
 
         # Output Trajectory
         try:
-            os.mkdir(output)
+            mkdir_p(output)
         except OSError:
             pass
 
         traj = []
         with open(os.path.join(output,f_out),'w') as f:
             traj.append("MODEL     %d" %int((step)/out_freq+1))
-            traj.append(trajectory_selected.group(1))
+            try:
+                traj.append(trajectory_selected.group(1))
+            except AttributeError:
+                raise AttributeError("Model not found. Check the -f option.")
             traj.append("ENDMDL\n")
             f.write("\n".join(traj))
         print("MODEL {} has been selected".format(f_out))
-    return files_out
+
+    return files_out, epochs, file_ids,step_indexes
 
 
 def parse_values(reports, n_structs, criteria, sort_order, steps):
@@ -152,6 +157,7 @@ def parse_values(reports, n_structs, criteria, sort_order, steps):
                 min_values = mixed_values.nlargest(n_structs, criteria)
     return min_values
 
+
 def filter_non_numerical_folders(reports, numfolders):
     """
     Filter non numerical folders among
@@ -162,6 +168,16 @@ def filter_non_numerical_folders(reports, numfolders):
         return new_reports
     else:
         return reports
+
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as exc:  # Python >2.5
+        if exc.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
 
 
 if __name__ == "__main__":
