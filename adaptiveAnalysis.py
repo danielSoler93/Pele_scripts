@@ -1,10 +1,9 @@
 import argparse
 import os
 import glob
-from Analysis_tools import numberOfClusters, writeClusteringStructures, \
+from Pele_scripts.Analysis_tools import numberOfClusters, writeClusteringStructures, \
     box, bestStructs, bactrackAdaptiveTrajectory, plotSpawningClusters
-import Utilities.utils as ut
-import sys
+import Pele_scripts.Utilities.utils as ut
 
 ANALYSIS_FOLDER = "analysis"
 OUTPUT_CLUSTER = os.path.join(ANALYSIS_FOLDER, "clustering")
@@ -13,6 +12,7 @@ CLUSTER_FILENAME = "clustersNumber"
 OUTPUT_CLUSTER_STRUCTS = os.path.join(OUTPUT_CLUSTER, "clusterStructs/cluster.pdb")
 BOX_FILE = os.path.join(ANALYSIS_FOLDER, "box.pdb")
 METRICS_FOLDER = os.path.join(ANALYSIS_FOLDER, "metrics")
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Run PELE analysis')
@@ -23,6 +23,20 @@ def parse_args():
     return args.control_file, args.adaptive
 
 
+def writeClustering(cluster_object, path):
+    try:
+        writeClusteringStructures.main(cluster_object, None, None, OUTPUT_CLUSTER_STRUCTS)
+    except IOError:
+        epochs_folder = glob.glob(os.path.join(path, "*/"))
+        numerical_folder = [int(os.path.basename(os.path.normpath(folder))) for folder in epochs_folder if os.path.basename(os.path.normpath(folder)).isdigit()]
+        last_epoch = str(max(numerical_folder))
+        cluster_object = os.path.abspath(os.path.join(last_epoch, "clustering/object.pkl"))
+        try:
+            writeClusteringStructures.main(cluster_object, None, None, OUTPUT_CLUSTER_STRUCTS)
+        except IOError:
+            raise IOError("Non clustering file found in last epoch. Adaptive did not finish properly")
+
+
 def main(control_file, adaptive=False):
 
     path, metrics, step_column, cluster_object, center, radius = ut.parse(control_file, adaptive=adaptive)
@@ -30,17 +44,7 @@ def main(control_file, adaptive=False):
         if adaptive:
             numberOfClusters.main(CLUSTER_FILENAME, OUTPUT_CLUSTER)
             plotSpawningClusters.main(SPAWNING_FILENAME)
-            try:
-                writeClusteringStructures.main(cluster_object, None, None, OUTPUT_CLUSTER_STRUCTS)
-            except IOError:
-                epochs_folder = glob.glob(os.path.join(path, "*/"))
-                numerical_folder = [int(os.path.basename(os.path.normpath(folder))) for folder in epochs_folder if os.path.basename(os.path.normpath(folder)).isdigit()]
-                last_epoch = str(max(numerical_folder))
-                cluster_object = os.path.abspath(os.path.join(last_epoch, "clustering/object.pkl"))
-                try:
-                    writeClusteringStructures.main(cluster_object, None, None, OUTPUT_CLUSTER_STRUCTS)
-                except IOError:
-                    raise IOError("Non clustering file found in last epoch. Adaptive did not finish properly")
+            writeClustering(cluster_object, path)
         if center and radius:
             box.build_box(center, radius, file=BOX_FILE)
         for metric in metrics:
@@ -53,6 +57,7 @@ def main(control_file, adaptive=False):
                     bactrackAdaptiveTrajectory.main(int(traj), int(step), epoch, metric_folder, traj_name)
             else:
                 files, epochs, trajs, steps = bestStructs.main(metric, path=os.getcwd(), output=metric_folder, steps=step_column, numfolders=False)
+
 
 if __name__ == "__main__":
     control_file, is_adaptive = parse_args()
