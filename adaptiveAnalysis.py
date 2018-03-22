@@ -52,7 +52,7 @@ def main(control_file, adaptive=False):
             metric_folder = os.path.join(METRICS_FOLDER, metric.replace(" ", ""))
             if adaptive:
                 files, epochs, trajs, steps = bestStructs.main(metric, path=os.getcwd(), output=metric_folder, steps=step_column, numfolders=True)
-                for file, epoch, traj, step in zip(files, epochs, trajs, steps):
+                for _, epoch, traj, step in zip(files, epochs, trajs, steps):
                     traj_name = "epoch{}_traj{}_pathway.pdb".format(epoch, traj)
                     bactrackAdaptiveTrajectory.main(int(traj), int(step), epoch, metric_folder, traj_name)
             else:

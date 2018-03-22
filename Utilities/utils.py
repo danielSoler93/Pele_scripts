@@ -62,7 +62,7 @@ def parse_pele(control_file):
                 radius = None
             if re.search('"reportPath"\s*:\s*"(.*)"', line):
                 result = re.search('"reportPath"\s*:\s*"(.*)"', line)
-                path, report_name = result.group(1).rsplit("/")
+                path, report_name = result.group(1).rsplit("/", 1)
         return path, report_name, center, radius
 
 
