@@ -4,7 +4,6 @@ import glob
 from Analysis_tools import numberOfClusters, writeClusteringStructures, \
     box, bestStructs, bactrackAdaptiveTrajectory, plotSpawningClusters
 import Utilities.utils as ut
-import sys
 
 ANALYSIS_FOLDER = "analysis"
 OUTPUT_CLUSTER = os.path.join(ANALYSIS_FOLDER, "clustering")
@@ -13,6 +12,7 @@ CLUSTER_FILENAME = "clustersNumber"
 OUTPUT_CLUSTER_STRUCTS = os.path.join(OUTPUT_CLUSTER, "clusterStructs/cluster.pdb")
 BOX_FILE = os.path.join(ANALYSIS_FOLDER, "box.pdb")
 METRICS_FOLDER = os.path.join(ANALYSIS_FOLDER, "metrics")
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Run PELE analysis')
@@ -33,7 +33,7 @@ def main(control_file, adaptive=False):
             try:
                 writeClusteringStructures.main(cluster_object, None, None, OUTPUT_CLUSTER_STRUCTS)
             except IOError:
-                epochs_folder = glob.glob(os.path.join(path, "*/"))
+                epochs_folder = glob.glob("*/")
                 numerical_folder = [int(os.path.basename(os.path.normpath(folder))) for folder in epochs_folder if os.path.basename(os.path.normpath(folder)).isdigit()]
                 last_epoch = str(max(numerical_folder))
                 cluster_object = os.path.abspath(os.path.join(last_epoch, "clustering/object.pkl"))
@@ -48,7 +48,7 @@ def main(control_file, adaptive=False):
             metric_folder = os.path.join(METRICS_FOLDER, metric.replace(" ", ""))
             if adaptive:
                 files, epochs, trajs, steps = bestStructs.main(metric, path=os.getcwd(), output=metric_folder, steps=step_column, numfolders=True)
-                for file, epoch, traj, step in zip(files, epochs, trajs, steps):
+                for _, epoch, traj, step in zip(files, epochs, trajs, steps):
                     traj_name = "epoch{}_traj{}_pathway.pdb".format(epoch, traj)
                     bactrackAdaptiveTrajectory.main(int(traj), int(step), epoch, metric_folder, traj_name)
             else:
