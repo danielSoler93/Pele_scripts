@@ -35,15 +35,15 @@ def parse(control_file, pele_file, adaptive=False):
             _, report_name, center, radius = parse_pele(pele_control_file)
         except IOError:
             pele_control_file = pele_file
-            _, report_name, center, radius = parse_pele(pele_control_file)
+            _, report_name, center, radius, output_freq = parse_pele(pele_control_file)
         report = os.path.join(path, "{}/{}_1".format(0, report_name))
         metrics, steps = parse_report(report)
-        return path, metrics, steps, cluster_object, center, radius
+        return path, metrics, steps, cluster_object, center, radius, output_freq
     else:
-        path, report_name, center, radius = parse_pele(control_file)
+        path, report_name, center, radius, output_freq = parse_pele(control_file)
         report = os.path.join(path, "{}_1".format(report_name))
         metrics, steps = parse_report(report)
-        return path, metrics, steps, cluster_object, center, radius
+        return path, metrics, steps, cluster_object, center, radius, output_freq
 
 
 def parse_pele(control_file):
@@ -67,7 +67,15 @@ def parse_pele(control_file):
             if re.search('"reportPath"\s*:\s*"(.*)"', line):
                 result = re.search('"reportPath"\s*:\s*"(.*)"', line)
                 path, report_name = result.group(1).rsplit("/", 1)
-        return path, report_name, center, radius
+
+            if re.search('"savingFrequencyForAcceptedSteps"\s*:\s*(.*),', line):
+                result = re.search('"savingFrequencyForAcceptedSteps"\s*:\s*(.*),', line)
+                output_freq = int(result.group(1))
+            elif re.search('"savingFrequencyForAcceptedSteps"\s*:\s*(.*)}', line):
+                result = re.search('"savingFrequencyForAcceptedSteps"\s*:\s*(.*)}', line)
+                output_freq = int(result.group(1))
+
+        return path, report_name, center, radius, output_freq
 
 
 def parse_report(report):
