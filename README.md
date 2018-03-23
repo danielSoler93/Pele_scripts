@@ -130,6 +130,7 @@ Group of small scripts to perform pele analysis.
     `$python plotSpawningClusters.py` <br />
     e.g. python /path/plotSpawningClusters.py
     - **Optional arguments:** <br />
+    **-o** "output" Name of the folder where to store the plots --> default: "" (store in current folder) <br />
     **-f** "filename" Name of the file to store the trajectory --> Default: "" (don't save the plots to disk)
     - **Output:** <br />
 	The script will generate a plot showing the number of spawned processors
