@@ -32,7 +32,7 @@ def parse(control_file, pele_file, adaptive=False):
         cluster_object = os.path.join(str(last_epoch), "clustering/object.pkl")
         pele_control_file = simulationrunnerBlock["params"][blockNames.SimulationParams.templetizedControlFile]
         try:
-            _, report_name, center, radius = parse_pele(pele_control_file)
+            _, report_name, center, radius, output_freq = parse_pele(pele_control_file)
         except IOError:
             pele_control_file = pele_file
             _, report_name, center, radius, output_freq = parse_pele(pele_control_file)
@@ -74,7 +74,6 @@ def parse_pele(control_file):
             elif re.search('"savingFrequencyForAcceptedSteps"\s*:\s*(.*)}', line):
                 result = re.search('"savingFrequencyForAcceptedSteps"\s*:\s*(.*)}', line)
                 output_freq = int(result.group(1))
-
         return path, report_name, center, radius, output_freq
 
 

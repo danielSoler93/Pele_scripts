@@ -8,7 +8,7 @@ import Pele_scripts.Utilities.utils as ut
 
 ANALYSIS_FOLDER = "analysis"
 OUTPUT_CLUSTER = os.path.join(ANALYSIS_FOLDER, "clustering")
-SPAWNING_FILENAME = os.path.join(OUTPUT_CLUSTER, "spawning")
+SPAWNING_FILENAME = os.path.join("spawning")
 CLUSTER_FILENAME = "clustersNumber"
 OUTPUT_CLUSTER_STRUCTS = os.path.join(OUTPUT_CLUSTER, "clusterStructs/cluster.pdb")
 BOX_FILE = os.path.join(ANALYSIS_FOLDER, "box.pdb")
@@ -47,7 +47,7 @@ def main(control_file, pele_file=None, adaptive=False):
     with ut.cd(path):
         if adaptive:
             numberOfClusters.main(CLUSTER_FILENAME, OUTPUT_CLUSTER)
-            plotSpawningClusters.main(SPAWNING_FILENAME)
+            plotSpawningClusters.main(SPAWNING_FILENAME, OUTPUT_CLUSTER)
             writeClustering(cluster_object, path)
         if center and radius:
             box.build_box(center, radius, file=BOX_FILE)
@@ -55,7 +55,7 @@ def main(control_file, pele_file=None, adaptive=False):
             print("Extracting best {} structures".format(metric))
             metric_folder = os.path.join(METRICS_FOLDER, metric.replace(" ", ""))
             if adaptive:
-                files, epochs, trajs, steps = bestStructs.main(metric, out_freq= output_freq, path=os.getcwd(), output=metric_folder, steps=step_column, numfolders=True)
+                files, epochs, trajs, steps = bestStructs.main(metric, out_freq=output_freq, path=os.getcwd(), output=metric_folder, steps=step_column, numfolders=True)
                 for _, epoch, traj, step in zip(files, epochs, trajs, steps):
                     traj_name = "epoch{}_traj{}_pathway.pdb".format(epoch, traj)
                     backtrackAdaptiveTrajectory.main(int(traj), int(step), epoch, metric_folder, traj_name)
