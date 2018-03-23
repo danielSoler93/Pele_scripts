@@ -1,8 +1,9 @@
+from __future__ import print_function
 import argparse
 import os
 import glob
 from Pele_scripts.Analysis_tools import numberOfClusters, writeClusteringStructures, \
-    box, bestStructs, bactrackAdaptiveTrajectory, plotSpawningClusters
+    box, bestStructs, backtrackAdaptiveTrajectory, plotSpawningClusters
 import Pele_scripts.Utilities.utils as ut
 
 ANALYSIS_FOLDER = "analysis"
@@ -17,7 +18,7 @@ METRICS_FOLDER = os.path.join(ANALYSIS_FOLDER, "metrics")
 def parse_args():
     parser = argparse.ArgumentParser(description='Run PELE analysis')
     parser.add_argument('control_file', type=str, help='Control_file from the job to analyze. Use -a flag if it is an adaptive job.')
-    parser.add_argument('--pele_file',"-pf", type=str, help='PELE Control_file from the job to analyze. Use -a flag if it is an adaptive job.', default=None)
+    parser.add_argument('--pele_file', "-pf", type=str, help='PELE Control_file from the job to analyze. Use -a flag if it is an adaptive job.', default=None)
     parser.add_argument('--adaptive', "-a", action='store_true', help='Analyze Adaptive PELE')
     args = parser.parse_args()
 
@@ -57,7 +58,7 @@ def main(control_file, pele_file=None, adaptive=False):
                 files, epochs, trajs, steps = bestStructs.main(metric, path=os.getcwd(), output=metric_folder, steps=step_column, numfolders=True)
                 for _, epoch, traj, step in zip(files, epochs, trajs, steps):
                     traj_name = "epoch{}_traj{}_pathway.pdb".format(epoch, traj)
-                    bactrackAdaptiveTrajectory.main(int(traj), int(step), epoch, metric_folder, traj_name)
+                    backtrackAdaptiveTrajectory.main(int(traj), int(step), epoch, metric_folder, traj_name)
             else:
                 files, epochs, trajs, steps = bestStructs.main(metric, path=os.getcwd(), output=metric_folder, steps=step_column, numfolders=False)
 
