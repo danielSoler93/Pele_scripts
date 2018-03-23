@@ -83,6 +83,19 @@ Group of small scripts to perform pele analysis.
     **-f** "file" (Output file) --> default: ./box.pdb
 	The script will create a box.pdb with a cubic box showing pele's conformational space.
 
+- plotAdaptive.py
+    - **Description:**  <br />
+     Write a string that creates a valid gnuplot command for plotting adaptive
+     simulations. Should be run from the adaptive simulation folders
+    - **Requested arguments:** <br />
+    `$python plotAdaptive.py steps_epoch xcol ycol filename -type_plot` <br />
+    e.g. python /path/plotAdaptive.py 4 2 5 report_ -rmsd
+    - **Optional arguments:** <br />
+    **--zcol** Column of a metric to use as color instead of the epoch --> default: None (use epoch as color) <br />
+    **--traj_range** Range of trajectories to plot (has to be contigous) --> Default: plot all trajectories
+    - **Output:** <br />
+	The script prints a gnuplot valid command that can be piped to gnuplot or pasted inside a gnuplot script for tweaking
+
 - backtrackAdaptiveTrajectory.py
     - **Description:**  <br />
      Recreate the trajectory fragments to the led to the discovery of a snapshot, specified by the tuple (epoch, trajectory, snapshot) and write as a pdb file. Should be run from the adaptive simulation folders
@@ -94,3 +107,41 @@ Group of small scripts to perform pele analysis.
     **--name** Name of the file to store the trajectory --> Default: "pathway.pdb"
     - **Output:** <br />
 	The script will create a folder (if asked via the -o option) and inside you will have the file containing the trajectory that lead to snapshot of interest. If the filename already exists, a number will be appended to distinguish it, i.e. pathway.pdb --> pathway_1.pdb
+
+- numberOfClusters.py
+    - **Description:**  <br />
+     Plot basic information about the clustering in an adaptive simulation. Should be run from the adaptive simulation folders
+    - **Requested arguments:** <br />
+    `$python numberOfClusters.py` <br />
+    e.g. python /path/numberOfClusters.py
+    - **Optional arguments:** <br />
+    **-o** "output" Name of the folder where to store the plots --> default: "" (store in current folder) <br />
+    **-f** "filename" Name of the file to store the trajectory --> Default: "" (don't save the plots to disk)
+    - **Output:** <br />
+	The script will generate 3 plots: 
+        1. The number of clusters per density value at each epoch  
+        2. The number of clusters per threshold value at each epoch 
+        3. The histogram of the cluster representatives contact ratios
+
+- plotSpawningClusters.py
+    - **Description:**  <br />
+     Plot basic information about the spawning in an adaptive simulation. Should be run from the adaptive simulation folders
+    - **Requested arguments:** <br />
+    `$python plotSpawningClusters.py` <br />
+    e.g. python /path/plotSpawningClusters.py
+    - **Optional arguments:** <br />
+    **-f** "filename" Name of the file to store the trajectory --> Default: "" (don't save the plots to disk)
+    - **Output:** <br />
+	The script will generate a plot showing the number of spawned processors
+    from cluster categorized by their size 
+
+- writeClusteringStructures.py
+    - **Description:**  <br />
+     Write specified cluster represenatative structures as a pdb file.
+    - **Requested arguments:** <br />
+    `$python writeClusteringStructures.py clustering_object output_folder structures_to_print` <br />
+    e.g. python /path/writeClusteringStructures.py 23/clustering/object.pkl cluster_struct/cluster.pdb 3 15 25 67
+    - **Optional arguments:** <br />
+    **--threshold** Print all cluster structures that are below this threshold --> default: None (print strctures selected) <br />
+    - **Output:** <br />
+	The script will create a folder (if passed in the output_folder option) and inside you will have the requested pdb files. The output_folder option has to contain the name of the output files as well as the output folder (if desired), i.e. path/cluster.pdb --> cluster/cluster_1.pdb, cluster/cluster_2.pdb, cluster/cluster_3.pdb, etc.
