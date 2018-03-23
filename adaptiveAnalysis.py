@@ -28,7 +28,7 @@ def writeClustering(cluster_object, path):
     try:
         writeClusteringStructures.main(cluster_object, None, None, OUTPUT_CLUSTER_STRUCTS)
     except IOError:
-        epochs_folder = glob.glob(os.path.join(path, "*/"))
+        epochs_folder = glob.glob("*/")
         numerical_folder = [int(os.path.basename(os.path.normpath(folder))) for folder in epochs_folder if os.path.basename(os.path.normpath(folder)).isdigit()]
         last_epoch = str(max(numerical_folder))
         cluster_object = os.path.abspath(os.path.join(last_epoch, "clustering/object.pkl"))
