@@ -40,7 +40,7 @@ def writeClustering(cluster_object, path):
 
 def main(control_file, pele_file=None, adaptive=False):
     try:
-        path, metrics, step_column, cluster_object, center, radius = ut.parse(control_file, pele_file, adaptive=adaptive)
+        path, metrics, step_column, cluster_object, center, radius, output_freq = ut.parse(control_file, pele_file, adaptive=adaptive)
     except TypeError:
         raise TypeError("Pele control file not found. Use an external one with option -pf")
     with ut.cd(path):
@@ -54,7 +54,7 @@ def main(control_file, pele_file=None, adaptive=False):
             print("Extracting best {} structures".format(metric))
             metric_folder = os.path.join(METRICS_FOLDER, metric.replace(" ", ""))
             if adaptive:
-                files, epochs, trajs, steps = bestStructs.main(metric, path=os.getcwd(), output=metric_folder, steps=step_column, numfolders=True)
+                files, epochs, trajs, steps = bestStructs.main(metric, out_freq= output_freq, path=os.getcwd(), output=metric_folder, steps=step_column, numfolders=True)
                 for _, epoch, traj, step in zip(files, epochs, trajs, steps):
                     traj_name = "epoch{}_traj{}_pathway.pdb".format(epoch, traj)
                     bactrackAdaptiveTrajectory.main(int(traj), int(step), epoch, metric_folder, traj_name)
