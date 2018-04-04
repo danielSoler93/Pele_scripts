@@ -29,7 +29,7 @@ FREQ = 1
 REPORT = "report"
 ACCEPTED_STEPS = 'numberOfAcceptedPeleSteps'
 PATH = os.path.abspath(os.getcwd())
-
+STEPS=3
 
 def parse_args():
 
@@ -39,13 +39,12 @@ def parse_args():
     parser.add_argument("criteria", type=str, nargs='+', help="Criteria we want to rank and output the strutures for. Must be a column of the report. i.e: Binding Energy")
     parser.add_argument("--ofreq", "-f", type=int, help="Every how many steps the trajectory were outputted on PELE i.e: 4", default=FREQ)
     parser.add_argument("--out", "-o", type=str, help="Output Path i.e: BE_apo", default="".join(CRITERIA))
-    parser.add_argument("--steps", "-as", type=str, help="Name of the accepted steps column in the report files. i.e: numberOfAcceptedPeleSteps", default=ACCEPTED_STEPS)
     parser.add_argument("--numfolders", "-nm", action="store_true", help="Not to parse non numerical folders")
     args = parser.parse_args()
-    return args.min, args.max, " ".join(args.criteria), args.ofreq, args.out, args.steps, args.numfolders
+    return args.min, args.max, " ".join(args.criteria), args.ofreq, args.out, args.numfolders
 
 
-def main(min, max, criteria, out_freq=FREQ, output="".join(CRITERIA), steps=ACCEPTED_STEPS, numfolders=False):
+def main(min, max, criteria, out_freq=FREQ, output="".join(CRITERIA),  numfolders=False):
     """
 
       Description: Get a range of values from a desire metric
@@ -74,6 +73,12 @@ def main(min, max, criteria, out_freq=FREQ, output="".join(CRITERIA), steps=ACCE
         reports[0]
     except IndexError:
         raise IndexError("Not report file found. Check you are in adaptive's or Pele root folder")
+
+    if criteria.isdigit():
+        steps, criteria = get_column_names(reports, STEPS, criteria)
+    else:
+        steps = get_column_names(reports, STEPS, criteria)
+
 
     # Data Mining
     min_values = parse_values(reports, criteria, min, max, steps)
@@ -158,7 +163,15 @@ def filter_non_numerical_folders(reports, numfolders):
     else:
         return reports
 
+def get_column_names(reports, steps, criteria):
+    data = pd.read_csv(reports[0], sep='    ', engine='python')
+    data = list(data)
+    if criteria.isdigit():
+        return data[int(steps)-1], data[int(criteria)-1]
+    else:
+        return data[int(steps)-1]
+
 
 if __name__ == "__main__":
-    min, max, criteria, out_freq, output, steps, numfolders = parse_args()
-    main(min, max, criteria, out_freq, output, steps, numfolders)
+    min, max, criteria, out_freq, output, numfolders = parse_args()
+    main(min, max, criteria, out_freq, output, numfolders)

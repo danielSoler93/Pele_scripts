@@ -177,7 +177,10 @@ def filter_non_numerical_folders(reports, numfolders):
 def get_column_names(reports, steps, criteria):
     data = pd.read_csv(reports[0], sep='    ', engine='python')
     data = list(data)
-    return data[int(steps)-1]
+    if criteria.isdigit():
+        return data[int(steps)-1], data[int(criteria)-1]
+    else:
+        return data[int(steps)-1]
 
 def mkdir_p(path):
     try:
