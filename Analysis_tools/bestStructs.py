@@ -33,26 +33,27 @@ FREQ = 1
 REPORT = "report"
 TRAJ = "trajectory"
 ACCEPTED_STEPS = 'numberOfAcceptedPeleSteps'
+OUTPUT_FOLDER = 'BestStructs'
 DIR = os.path.abspath(os.getcwd())
+STEPS=3
 
 
 def parse_args():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("crit", type=str, nargs='+', help="Criteria we want to rank and output the strutures for. Must be a clumn of the report. i.e: Binding Energy")
-    parser.add_argument("--steps", "-as", type=str, help="Name of the accepted steps column in the report files. i.e: numberOfAcceptedPeleSteps", default=ACCEPTED_STEPS)
+    parser.add_argument("crit", type=str, nargs='+', help="Criteria we want to rank and output the strutures for. Must be a column of the report. i.e: Binding Energy")
     parser.add_argument("--path", type=str, help="Path to Pele's results root folder i.e: path=/Pele/results/", default=DIR)
     parser.add_argument("--nst", "-n", type=int, help="Number of produced structures. i.e: 20" , default=N_STRUCTS)
     parser.add_argument("--sort", "-s", type=str, help="Look for minimum or maximum value --> Options: [min/max]. i.e: max", default=ORDER)
     parser.add_argument("--ofreq", "-f", type=int, help="Every how many steps the trajectory were outputted on PELE i.e: 4", default=FREQ)
-    parser.add_argument("--out", "-o", type=str, help="Output Path. i.e: BindingEnergies_apo", default="".join(CRITERIA))
+    parser.add_argument("--out", "-o", type=str, help="Output Path. i.e: BindingEnergies_apo", default=OUTPUT_FOLDER)
     parser.add_argument("--numfolders", "-nm", action="store_true", help="Not to parse non numerical folders")
     args = parser.parse_args()
 
-    return os.path.abspath(args.path), " ".join(args.crit), args.nst, args.sort, args.ofreq, args.out, args.steps, args.numfolders
+    return os.path.abspath(args.path), " ".join(args.crit), args.nst, args.sort, args.ofreq, args.out, args.numfolders
 
 
-def main(criteria, path=DIR, n_structs=10, sort_order="min", out_freq=FREQ, output="".join(CRITERIA), steps = ACCEPTED_STEPS, numfolders=False):
+def main(criteria, path=DIR, n_structs=10, sort_order="min", out_freq=FREQ, output=OUTPUT_FOLDER, numfolders=False):
     """
 
       Description: Rank the traj found in the report files under path
@@ -84,6 +85,10 @@ def main(criteria, path=DIR, n_structs=10, sort_order="min", out_freq=FREQ, outp
     except IndexError:
         raise IndexError("Not report file found. Check you are in adaptive's or Pele root folder")
 
+    if criteria.isdigit():
+        steps, criteria = get_column_names(reports, STEPS, criteria)
+    else:
+        steps = get_column_names(reports, STEPS, criteria)
     # Data Mining
     min_values = parse_values(reports, n_structs, criteria, sort_order, steps)
     values = min_values[criteria].tolist()
@@ -169,6 +174,10 @@ def filter_non_numerical_folders(reports, numfolders):
     else:
         return reports
 
+def get_column_names(reports, steps, criteria):
+    data = pd.read_csv(reports[0], sep='    ', engine='python')
+    data = list(data)
+    return data[int(steps)-1]
 
 def mkdir_p(path):
     try:
@@ -181,5 +190,5 @@ def mkdir_p(path):
 
 
 if __name__ == "__main__":
-    path, criteria, interval, sort_order, out_freq, output, steps, numfolders = parse_args()
-    main(path, criteria, interval, sort_order, out_freq, output, steps, numfolders)
+    path, criteria, interval, sort_order, out_freq, output, numfolders = parse_args()
+    main(criteria, path, interval, sort_order, out_freq, output, numfolders)
