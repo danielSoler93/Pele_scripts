@@ -12,66 +12,48 @@ Group of small scripts to perform pele analysis.
 
 # Analysis Tools
 -------------------
-- bestSturcts.py
+- bestStructs.py
     - **Description:**  <br />
-    Parse all the folders with reports found under the current directory and sort them all by the chosen criteria and output the n best structures.
+    Parse all the reports files under the current directory and sort them all by the chosen criteria. Then, output the n best structures. **Must be run from adaptive's root folder or Pele's result folder**
     - **Requested arguments:** <br />
-    $python best_structs.py <criteria> <br />
-    e.g. python /home/dsoler/best_structs.py Binding Energy. <br />
-    `Note: The criteria must be one of the report's column names.`
+    `$python best_structs.py <criteria (column_number or column_name)>` <br />
+    e.g.1. python /home/dsoler/best_structs.py Binding Energy. <br />
+    e.g.2. python /home/dsoler/best_structs.py 5. <br />
+    **Note: The criteria must be one of the report's column name/number after the column numberOfAcceptedSteps.**
     - **Optional arguments:** <br />
-    **-as** "Accepted steps report column name. --> Default: NumberAcceptedSteps. <br />
-    i.e: -as AcceptedSteps <br />
-    `Important in case your report column name is different than "NumberAcceptedSteps"`<br/>
     **-s** "max or min" ( max to order from higher to lower values, min from lower to higher) --> Default: min. <br />
     i.e: -s max<br />
     **-f** frequency the Pele's controlfile save the output --> Default:1. <br />
     i.e: -f 4 <br />
-    `Important in case the output save frequency of your control file is >1` <br />
+    **Note: Important in case the output save frequency of your control file is >1** <br />
     **-n** Structures to be outputted --> Default:10. <br />
     i.e: -n 10<br />
     **-o** Output Folder --> Default Criteria's name <br />
-    i.e: -o PRR_apo_Binding_energies
+    i.e: -o PRR_apo_Binding_energies <br />
     **-nm** Non numerical folders --> Default: False <br />
     i.e: -nm
-
-    - **command adaptive :** <br />
-    $ python /home/dsoler/best_structs.py PELE++_Examples/Adaptive/PadaI/PadaI_FULL4/
-    - **command pele:** <br />
-    $ python /home/dsoler/best_structs.py PELE++_Examples/Global/PadaI/ -f 4
-    - **full command pele** (output 20 strutures sorted by sasa from higher to lower values taking into account PELE save the output every 4 steps): <br />
-    $ python /home/dsoler/best_structs.py PELE++_Examples/Global/PadaI/   -c sasaLig -s max -n 20 -f 4
     - **Output:** <br />
     The script will create a folder called {criteria} or {output} if -o option. Inside that one, you will have the structures named as: traj_{epoch}.{report}.{step}_{cirteria}_{value}.pdb
 
+
 - rangeOfValues.py
     - **Description:**  <br />
-    Parse all the folders with reports found under the current directory and sort them all by the chosen criteria and output the value range from [users_minimum_value:users_max_value].
+    Parse all the reports under the current directory and sort them all by the chosen criteria and output the value range from [users_minimum_value:users_max_value]. **Must be run from adaptive's root folder or Pele's result folder**
     - **Requested arguments:** <br />
-    $python best_structs.py <min_value> <max_value> <criteria> <br />
-    e.g. python /home/dsoler/best_structs.py -50 -40 Binding Energy. <br />
-    `Note: The criteria must be one of the report's column names.`
+    `$python best_structs.py <min_value> <max_value> <criteria> <br />`
+    e.g.1. python /home/dsoler/best_structs.py -50 -40 Binding Energy. <br />
+    e.g.2 python /home/dsoler/best_structs.py -50 -40 5. <br />
+    **Note: The criteria must be one of the report's metric names/number.**
     - **Optional arguments:** <br />
-    **-as** "Accepted steps report column name. --> Default: NumberAcceptedSteps. <br />
-    i.e: -as AcceptedSteps <br />
-    `Important in case your report column name is different than "NumberAcceptedSteps"`<br/>
-    **-f** frequency the Pele's controlfile save the output --> Default:1. <br />
+    **-f** frequency the Pele's control file save the output --> Default:1. <br />
     i.e: -f 4 <br />
-    `Important in case the output save frequency of your control file is >1` <br />
+    **Note: Important in case the output save frequency of your control file is >1** <br />
     **-o** Output Folder --> Default Criteria's name <br />
     i.e: -o PRR_apo_Binding_energies
     **-nm** Non numerical folders --> Default: False <br />
     i.e: -nm
-
-
-    - **command adaptive :** <br />
-    $ python /home/dsoler/best_structs.py PELE++_Examples/Adaptive/PadaI/PadaI_FULL4/ 0 0.3 SasaLig
-    - **command pele:** <br />
-    $ python /home/dsoler/best_structs.py PELE++_Examples/Global/PadaI/ 0 0.3 SasaLig -f 4
-    - **full command pele** (output 20 strutures sorted by sasa from higher to lower values taking into account PELE save the output every 4 steps): <br />
-    $ python /home/dsoler/best_structs.py PELE++_Examples/Global/PadaI/   0 0.3 SasaLig -as AcceptedSteps -f 4 -o apo_pocket
     - **Output:** <br />
-    The script will create a folder called {criteria} or {output} if -o option. Inside that one, you will have the structures named as: traj_{epoch}.{report}.{step}_{cirteria}_{value}.pdb
+    The script will create a folder called {criteria} or {output} if -o option. Inside that one, you will have the structures named as: traj_{epoch}.{report}.{step}_{criteria}_{value}.pdb
 	
 - box.py
     - **Description:**  <br />
