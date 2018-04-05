@@ -57,10 +57,10 @@ Group of small scripts to perform pele analysis.
 	
 - box.py
     - **Description:**  <br />
-    Create box given a 3 cooridnates center an a radius.
+    Create box of control file.
     - **Requested arguments:** <br />
-    `$python box.py center_x center_y center_z radius` <br />
-    e.g. python box.py 23.12 45.34 28.12 21
+    `$python box.py <control_file>` <br />
+    e.g. python box.py pele.conf
     - **Optional arguments:** <br />
     **-f** "file" (Output file) --> default: ./box.pdb
 	The script will create a box.pdb with a cubic box showing pele's conformational space.
