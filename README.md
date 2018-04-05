@@ -9,6 +9,7 @@ Group of small scripts to perform pele analysis.
 4) [PELE(comercial software)](https://pele.bsc.es/pele.wt)
 5) [Analysis Tools](https://github.com/miniaoshi/Pele_scripts)
 6) [Ligand Growing](https://github.com/miniaoshi/Ligand_growing)
+7) [MSM_PELE](https://github.com/miniaoshi/MSM_PELE)
 
 # Analysis Tools
 -------------------
@@ -64,6 +65,8 @@ Group of small scripts to perform pele analysis.
     - **Optional arguments:** <br />
     **-f** "file" (Output file) --> default: ./box.pdb
 	The script will create a box.pdb with a cubic box showing pele's conformational space.
+    - **Output:** <br />
+    The script will create a box.pdb with the exploration box inside the control file.
 
 - plotAdaptive.py
     - **Description:**  <br />
