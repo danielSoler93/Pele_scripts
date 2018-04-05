@@ -14,13 +14,16 @@ BOX=os.path.join(DIR,"box_template.pdb")
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Create pdb-box from center and radius")
-    parser.add_argument("cfile", type=str,  help='control file with the box info')
-    parser.add_argument("-f", "--file", default= "box.pdb", help='output file')
+    parser.add_argument("-cf", "--cfile", type=str,  help='control file with the box info', default=None)
+    parser.add_argument("-c", "--center",  nargs='+', type=float,  help='center of the box', default=None)
+    parser.add_argument("-r", "--radius",  type= int, help='radius of the box', default=None)
+    parser.add_argument("-f", "--file", help='output file', default='box.pdb')
     args = parser.parse_args()
 
-
-    return args.cfile, args.file
-
+    if any([args.cfile, args.center, args.radius]):
+        return args.cfile, args.center, args.radius, args.file
+    else:
+        raise ValueError("Non arguments were passed. Either use a PELE control file or define a center and radius.")
 
 class TemplateBuilder(object):
 
@@ -64,10 +67,10 @@ def parse(control_file):
                 raise ValueError("No Box found. Check your {} file.".format(control_file))
     return center, radius
 
-def build_box(control_file, file):
+def build_box(control_file, center, radius, file):
 
-    center, radius = parse(control_file)
-   
+    if control_file:
+        center, radius = parse(control_file)
 
     cx, cy, cz = center
     v1 = COORD.format(cx-radius,cy-radius, cz-radius)
@@ -94,6 +97,6 @@ def build_box(control_file, file):
     return file
 
 if __name__ == "__main__":
-    control_file, box_file = parse_args()
-    box = build_box(control_file, box_file)
+    control_file, center, radius, box_file = parse_args()
+    box = build_box(control_file, center, radius, box_file)
     print("Box created in {}".format(os.path.abspath(box)))
