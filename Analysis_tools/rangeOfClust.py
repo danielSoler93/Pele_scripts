@@ -34,21 +34,25 @@ ACCEPTED_STEPS = 'numberOfAcceptedPeleSteps'
 PATH = os.path.abspath(os.getcwd())
 STEPS = 3
 OUTPUT_FOLDER = 'RangeOfValues'
+NCLUSTERS = 10
 
 def parse_args():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("min", type=float, help="Minimum Value Range i.e: -50")
     parser.add_argument("max", type=float, help="Maximum ValueRange i.e: 0")
+    parser.add_argument("residue", type=str, help="Residue name to clusterize")
     parser.add_argument("criteria", type=str, nargs='+', help="Criteria we want to rank and output the strutures for. Must be a column of the report. i.e: Binding Energy")
     parser.add_argument("--ofreq", "-f", type=int, help="Every how many steps the trajectory were outputted on PELE i.e: 4", default=FREQ)
     parser.add_argument("--out", "-o", type=str, help="Output Path i.e: BE_apo", default=OUTPUT_FOLDER)
     parser.add_argument("--numfolders", "-nm", action="store_true", help="Not to parse non numerical folders")
+    parser.add_argument("--clusters", "-c", type=int, help="Numbers of clusters", default=NCLUSTERS)
     args = parser.parse_args()
-    return args.min, args.max, " ".join(args.criteria), args.ofreq, args.out, args.numfolders
+
+    return args.min, args.max, " ".join(args.criteria), args.residue, args.ofreq, args.out, args.numfolders, args.clusters
 
 
-def main(min, max, criteria, out_freq=FREQ, output="".join(CRITERIA),  numfolders=False):
+def main(min, max, criteria, residue, out_freq=FREQ, output="".join(CRITERIA),  numfolders=False, nclusters=NCLUSTERS):
     """
 
       Description: Get a range of values from a desire metric
@@ -124,7 +128,7 @@ def main(min, max, criteria, out_freq=FREQ, output="".join(CRITERIA),  numfolder
         except AttributeError:
             raise AttributeError("MODEL {} not found".format(f_out))
 
-    traj, discret = cl.main(num_clusters=10, output_folder="Clusters", ligand_resname="SMT", atom_ids="", traj_folder=output)
+    traj, discret = cl.main(num_clusters=nclusters, output_folder="Clusters", ligand_resname=residue, atom_ids="", traj_folder=output)
 
     return traj, discret
 
@@ -179,7 +183,7 @@ def get_column_names(reports, steps, criteria):
 
 
 if __name__ == "__main__":
-    min, max, criteria, out_freq, output, numfolders = parse_args()
-    trajs, discret = main(min, max, criteria, out_freq, output, numfolders)
+    min, max, criteria, residue, out_freq, output, numfolders, nclusters = parse_args()
+    trajs, discret = main(min, max, criteria, residue, out_freq, output, numfolders, nclusters)
     shutil.rmtree(trajs, ignore_errors=True)
     shutil.rmtree(discret, ignore_errors=True)
