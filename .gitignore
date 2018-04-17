@@ -5,4 +5,5 @@
 *.sw[op]
 */*.sw[op]
 *.swn
+*.swm
 *.swl
