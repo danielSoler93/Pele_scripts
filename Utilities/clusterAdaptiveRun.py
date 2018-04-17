@@ -1,12 +1,10 @@
-import sys
 import os
 import glob
 import numpy as np
 import shutil
 import argparse
-from AdaptivePELE.utilities import utilities
-from AdaptivePELE.freeEnergies import cluster, extractCoords
-
+import Pele_scripts.Utilities.extractCoords as ex
+from AdaptivePELE.freeEnergies import cluster
 
 
 def parseArgs():
@@ -52,7 +50,6 @@ def get_centers_info(trajectoryFolder, trajectoryBasename, num_clusters, cluster
         if len(trajCoords.shape) < 2:
             trajCoords = [trajCoords]
         for snapshot in trajCoords:
-            nSnap = snapshot[0]
             snapshotCoords = snapshot[1:]
             dist = np.sqrt(np.sum((clusterCenters-snapshotCoords)**2, axis=1))
             for clusterInd in xrange(num_clusters):
@@ -65,7 +62,7 @@ def get_centers_info(trajectoryFolder, trajectoryBasename, num_clusters, cluster
 
 def main(num_clusters, output_folder, ligand_resname, atom_ids, traj_folder):
 
-    extractCoords.main(folder_name=traj_folder, lig_resname=ligand_resname, non_Repeat=True, atom_Ids=atom_ids)
+    ex.main(folder_name=traj_folder, lig_resname=ligand_resname, non_Repeat=True, atom_Ids=atom_ids)
     trajectoryFolder = "allTrajs"
     trajectoryBasename = "*trajectory*"
     stride = 1
@@ -89,6 +86,7 @@ def main(num_clusters, output_folder, ligand_resname, atom_ids, traj_folder):
     writePDB(COMArray, os.path.join(outputFolder, "clusters_%d_KMeans_allSnapshots.pdb" % num_clusters))
     writeInitialStructures(centersInfo, outputFolder , traj_folder)
     return trajectoryFolder, "discretized"
+
 
 if __name__ == "__main__":
     n_clusters, lig_name, atom_id, output = parseArgs()
