@@ -1,2 +1,9 @@
-*.pyc
 */*.pyc
+*.pyc
+*/*.pyo
+*.pyo
+*.sw[op]
+*/*.sw[op]
+*.swn
+*.swm
+*.swl
