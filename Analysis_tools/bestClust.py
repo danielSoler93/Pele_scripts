@@ -37,12 +37,14 @@ TRAJ = "trajectory"
 ACCEPTED_STEPS = 'numberOfAcceptedPeleSteps'
 OUTPUT_FOLDER = 'BestStructs'
 DIR = os.path.abspath(os.getcwd())
-STEPS=3
+STEPS = 3
+NCLUSTERS = 10
 
 
 def parse_args():
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("residue", type=str,  help="Residue name to clusterize. i.e AS4")
     parser.add_argument("crit", type=str, nargs='+', help="Criteria we want to rank and output the strutures for. Must be a column of the report. i.e: Binding Energy")
     parser.add_argument("--path", type=str, help="Path to Pele's results root folder i.e: path=/Pele/results/", default=DIR)
     parser.add_argument("--nst", "-n", type=int, help="Number of produced structures. i.e: 20" , default=N_STRUCTS)
@@ -50,12 +52,13 @@ def parse_args():
     parser.add_argument("--ofreq", "-f", type=int, help="Every how many steps the trajectory were outputted on PELE i.e: 4", default=FREQ)
     parser.add_argument("--out", "-o", type=str, help="Output Path. i.e: BindingEnergies_apo", default=OUTPUT_FOLDER)
     parser.add_argument("--numfolders", "-nm", action="store_true", help="Not to parse non numerical folders")
+    parser.add_argument("--clusters", type=int, help="Nunmber of clusters. i.e 10")
     args = parser.parse_args()
 
-    return os.path.abspath(args.path), " ".join(args.crit), args.nst, args.sort, args.ofreq, args.out, args.numfolders
+    return os.path.abspath(args.path), args.residue, " ".join(args.crit), args.nst, args.sort, args.ofreq, args.out, args.numfolders, args.clusters
 
 
-def main(criteria, path=DIR, n_structs=10, sort_order="min", out_freq=FREQ, output=OUTPUT_FOLDER, numfolders=False):
+def main(criteria, residue, path=DIR, n_structs=10, sort_order="min", out_freq=FREQ, output=OUTPUT_FOLDER, numfolders=False, nclusters=NCLUSTERS):
     """
 
       Description: Rank the traj found in the report files under path
@@ -127,7 +130,7 @@ def main(criteria, path=DIR, n_structs=10, sort_order="min", out_freq=FREQ, outp
             traj.append("ENDMDL\n")
             f.write("\n".join(traj))
         print("MODEL {} has been selected".format(f_out))
-    traj, discret = cl.main(num_clusters=10, output_folder="Clusters", ligand_resname="SMT", atom_ids="", traj_folder=output)
+    traj, discret = cl.main(num_clusters=nclusters, output_folder="Clusters", ligand_resname=residue, atom_ids="", traj_folder=output)
 
     return traj, discret
 
@@ -196,8 +199,8 @@ def mkdir_p(path):
 
 
 if __name__ == "__main__":
-    path, criteria, interval, sort_order, out_freq, output, numfolders = parse_args()
-    trajs, discret = main(criteria, path, interval, sort_order, out_freq, output, numfolders)
+    path, residue, criteria, interval, sort_order, out_freq, output, numfolders, nclusters = parse_args()
+    trajs, discret = main(criteria, residue, path, interval, sort_order, out_freq, output, numfolders, nclusters)
     shutil.rmtree(trajs, ignore_errors=True)
     shutil.rmtree(discret, ignore_errors=True)
 
