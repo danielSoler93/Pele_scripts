@@ -1,6 +1,8 @@
+*/*.pyc
 *.pyc
-*.sw[onp]
-Analysis_tools/*.pyc
-*.sw[onp]
-Utilities/*.pyc
-Utilities/*.sw[onp]
+*/*.pyo
+*.pyo
+*.sw[op]
+*/*.sw[op]
+*.swn
+*.swl
