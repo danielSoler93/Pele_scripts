@@ -56,6 +56,10 @@ def parse_args():
     return args.crit1, args.crit2, os.path.abspath(args.path), args.nst, args.sort, args.ofreq, args.out, args.numfolders
 
 
+def onclick(event):
+    print('button={}, x={}, y={}, xdata={}, ydata={}'.format(event.button, event.x, event.y, event.xdata, event.ydata))
+
+
 def main(criteria1, criteria2, path=DIR, n_structs=10, sort_order="min", out_freq=FREQ, output=OUTPUT_FOLDER, numfolders=False):
     """
 
@@ -90,19 +94,25 @@ def main(criteria1, criteria2, path=DIR, n_structs=10, sort_order="min", out_fre
     except IndexError:
         raise IndexError("Not report file found. Check you are in adaptive's or Pele root folder")
 
-    steps = get_column_names(reports, STEPS)
+    steps, crit1_name, crit2_name = get_column_names(reports, STEPS, criteria1, criteria2)
     # Data Mining
-    min_values = parse_values(reports, criteria1, criteria2, sort_order, steps)
-    values1 = min_values[criteria1].tolist()
-    values2 = min_values[criteria2].tolist()
+    min_values = parse_values(reports, criteria1, criteria2, sort_order, steps, crit1_name, crit2_name)
+    print(min_values)
+    values1 = min_values[crit1_name].tolist()
+    values2 = min_values[crit2_name].tolist()
     paths = min_values[DIR].tolist()
     epochs = [os.path.basename(os.path.normpath(os.path.dirname(Path))) for Path in paths]
     file_ids = min_values.report.tolist()
     step_indexes = min_values[steps].tolist()
-    plt.plot(values1, values2)
+    fig = plt.figure()
+   
+    cid = fig.canvas.mpl_connect('button_press_event', onclick)
+    plt.plot(values1, values2, 'ro')
+    plt.show()
+
     
 
-def parse_values(reports, criteria1, criteria2, sort_order, steps):
+def parse_values(reports, criteria1, criteria2, sort_order, steps, crit1_name, crit2_name):
     """
 
        Description: Parse the 'reports' and create a sorted array
@@ -113,8 +123,8 @@ def parse_values(reports, criteria1, criteria2, sort_order, steps):
     INITIAL_DATA = [(DIR, []),
                     (REPORT, []),
                     (steps, []),
-                    (criteria1, []),
-                    (criteria2, [])
+                    (crit1_name, []),
+                    (crit2_name, [])
                     ]
     min_values = pd.DataFrame.from_items(INITIAL_DATA)
     for file in reports:
@@ -138,10 +148,11 @@ def filter_non_numerical_folders(reports, numfolders):
     else:
         return reports
 
-def get_column_names(reports, steps):
+def get_column_names(reports, steps, criteria1, criteria2):
     data = pd.read_csv(reports[0], sep='    ', engine='python')
     data = list(data)
-    return data[int(steps)-1]
+
+    return data[int(steps)-1], data[criteria1-1], data[criteria2-1]
 
 def mkdir_p(path):
     try:
