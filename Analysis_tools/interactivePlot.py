@@ -2,6 +2,7 @@
 
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 import os
 import errno
 import argparse
@@ -55,9 +56,77 @@ def parse_args():
 
     return args.crit1, args.crit2, os.path.abspath(args.path), args.nst, args.sort, args.ofreq, args.out, args.numfolders
 
-
 def onclick(event):
-    print('button={}, x={}, y={}, xdata={}, ydata={}'.format(event.button, event.x, event.y, event.xdata, event.ydata))
+    print('xdata={}, ydata={}'.format(event.xdata, event.ydata))
+
+
+class Rectangle(object):
+
+  def __init__(self, metrics, crit1, crit2, steps):
+    self.metrics = metrics
+    self.crit1 = crit1
+    self.crit2 = crit2
+    self.steps = steps
+
+  def on_press(self, event):
+    'on button press we will see if the mouse is over us and store some data'
+    if not event.inaxes: return
+    self.xo, self.yo = event.xdata, event.ydata
+
+   
+  def on_release(self, event):
+    'on release we reset the press data'
+    if not event.inaxes: return
+    self.xf, self.yf = event.xdata, event.ydata
+    self.compute()
+
+  def compute(self):
+    self.data_to_extract = (self.metrics[(self.metrics[self.crit2] > self.yf) & (self.metrics[self.crit2] < self.yo) &
+    (self.metrics[self.crit1] > self.xo) & (self.metrics[self.crit1] < self.xf) ])
+    self.extract_snapshots(self.data_to_extract, self.steps)
+       
+
+  def extract_snapshots(self, min_values, steps):
+      values1 = min_values[self.crit1].tolist()
+      values2 = min_values[self.crit2].tolist()
+      paths = min_values[DIR].tolist()
+      epochs = [os.path.basename(os.path.normpath(os.path.dirname(Path))) for Path in paths]
+      file_ids = min_values.report.tolist()
+      step_indexes = min_values[steps].tolist()
+      files_out = ["epoch{}_trajectory_{}.{}_{}{:.2f}_{}{:.3f}.pdb".format(epoch, report, int(step), self.crit1.replace(" ",""),
+        value1, self.crit2.replace(" ",""), value2) \
+        for epoch, step, report, value1, value2 in zip(epochs, step_indexes, file_ids, values1, values2)]
+      for f_id, f_out, step, path in zip(file_ids, files_out, step_indexes, paths):
+
+          # Read Trajetory from PELE's output
+          f_in = glob.glob(os.path.join(os.path.dirname(path), "*trajectory*_{}.pdb".format(f_id)))
+          if len(f_in) == 0:
+              sys.exit("Trajectory {} not found. Be aware that PELE trajectories must contain the label \'trajectory\' in their file name to be detected".format("*trajectory*_{}".format(f_id)))
+          f_in = f_in[0]
+          with open(f_in, 'r') as input_file:
+              file_content = input_file.read()
+          trajectory_selected = re.search('MODEL\s+%d(.*?)ENDMDL' %int((step)/out_freq+1), file_content,re.DOTALL)
+
+          # Output Trajectory
+          try:
+              mkdir_p(output)
+          except OSError:
+              pass
+
+          traj = []
+          with open(os.path.join(output,f_out),'w') as f:
+              traj.append("MODEL     %d" %int((step)/out_freq+1))
+              try:
+                  traj.append(trajectory_selected.group(1))
+              except AttributeError:
+                  raise AttributeError("Model not found. Check the -f option.")
+              traj.append("ENDMDL\n")
+              f.write("\n".join(traj))
+          print("MODEL {} has been selected".format(f_out))
+
+
+
+
 
 
 def main(criteria1, criteria2, path=DIR, n_structs=10, sort_order="min", out_freq=FREQ, output=OUTPUT_FOLDER, numfolders=False):
@@ -105,8 +174,9 @@ def main(criteria1, criteria2, path=DIR, n_structs=10, sort_order="min", out_fre
     file_ids = min_values.report.tolist()
     step_indexes = min_values[steps].tolist()
     fig = plt.figure()
-   
-    cid = fig.canvas.mpl_connect('button_press_event', onclick)
+    rect = Rectangle(min_values, crit1_name, crit2_name, steps)
+    cidpress = fig.canvas.mpl_connect('button_press_event', rect.on_press)
+    cidrealese= fig.canvas.mpl_connect('button_release_event', rect.on_release)
     plt.plot(values1, values2, 'ro')
     plt.show()
 
@@ -119,8 +189,20 @@ def parse_values(reports, criteria1, criteria2, sort_order, steps, crit1_name, c
        of size n_structs following the criteria chosen by the user.
 
     """
-
-    INITIAL_DATA = [(DIR, []),
+    if steps == crit1_name:
+      INITIAL_DATA = [(DIR, []),
+                      (REPORT, []),
+                      (steps, []),
+                      (crit2_name, [])
+                      ]
+    elif steps == crit2_name:
+      INITIAL_DATA = [(DIR, []),
+                    (REPORT, []),
+                    (steps, []),
+                    (crit1_name, []),
+                    ]
+    else:
+      INITIAL_DATA = [(DIR, []),
                     (REPORT, []),
                     (steps, []),
                     (crit1_name, []),
@@ -130,7 +212,12 @@ def parse_values(reports, criteria1, criteria2, sort_order, steps, crit1_name, c
     for file in reports:
         report_number = os.path.basename(file).split("_")[-1]
         data = pd.read_csv(file, sep='    ', engine='python')
-        selected_data = data.iloc[:, [2, criteria1-1, criteria2-1]]
+        if steps == crit1_name:
+          selected_data = data.iloc[:, [2, criteria2-1]]
+        elif steps == crit1_name:
+          selected_data = data.iloc[:, [2, criteria1-1]]
+        else:
+          selected_data = data.iloc[:, [2, criteria1-1, criteria2-1]]
         selected_data.insert(0, DIR, [file]*selected_data[steps].size)
         selected_data.insert(1, REPORT, [report_number]*selected_data[steps].size)
         min_values = pd.concat([min_values, selected_data])
