@@ -44,29 +44,48 @@ STEPS=3
 def parse_args():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("crit1", type=int, help="Criteria we want to rank and output the strutures for. Must be a column of the report. i.e: Binding Energy")
-    parser.add_argument("crit2", type=int, help="Criteria we want to rank and output the strutures for. Must be a column of the report. i.e: Binding Energy")
+    parser.add_argument("crit1", type=int, help="First Criteria we want to rank and output the strutures for. Must be a column of the report. i.e: Binding Energy")
+    parser.add_argument("crit2", type=int, help="Second Criteria we want to rank and output the strutures for. Must be a column of the report. i.e: Binding Energy")
+    parser.add_argument("ad_steps", type=int, help="Adaptive Steps i.e: self.ad_steps")
     parser.add_argument("--path", type=str, help="Path to Pele's results root folder i.e: path=/Pele/results/", default=DIR)
     parser.add_argument("--nst", "-n", type=int, help="Number of produced structures. i.e: 20" , default=N_STRUCTS)
     parser.add_argument("--sort", "-s", type=str, help="Look for minimum or maximum value --> Options: [min/max]. i.e: max", default=ORDER)
-    parser.add_argument("--ofreq", "-f", type=int, help="Every how many steps the trajectory were outputted on PELE i.e: 4", default=FREQ)
+    parser.add_argument("--ofreq", "-f", type=int, help="Every how many steps the trajectory were outputted on PELE i.e: self.ad_steps", default=FREQ)
     parser.add_argument("--out", "-o", type=str, help="Output Path. i.e: BindingEnergies_apo", default=OUTPUT_FOLDER)
     parser.add_argument("--numfolders", "-nm", action="store_true", help="Not to parse non numerical folders")
     args = parser.parse_args()
 
-    return args.crit1, args.crit2, os.path.abspath(args.path), args.nst, args.sort, args.ofreq, args.out, args.numfolders
+    return args.crit1, args.crit2, args.ad_steps, os.path.abspath(args.path), args.nst, args.sort, args.ofreq, args.out, args.numfolders
 
-def onclick(event):
-    print('xdata={}, ydata={}'.format(event.xdata, event.ydata))
+def is_adaptive():
+  folders = glob.glob("{}/*/".format(DIR))
+  folders_numerical = [os.path.basename(os.path.normpath(folder)) for folder in folders]
+  if len(folders_numerical) > 1:
+    return True
+  else:
+    return False
 
 
-class Rectangle(object):
+class DataHandler(object):
 
-  def __init__(self, metrics, crit1, crit2, steps):
+  def __init__(self, metrics, crit1, crit2, index1, index2, steps, adaptive, ad_steps):
     self.metrics = metrics
     self.crit1 = crit1
     self.crit2 = crit2
+    self.index1 = index1
+    self.index2 = index2
     self.steps = steps
+    self.adaptive = adaptive
+    self.ad_steps = ad_steps
+    self.descompose_values()
+
+
+  def descompose_values(self):
+    self.paths = self.metrics[DIR].tolist()
+    self.epochs = [os.path.basename(os.path.normpath(os.path.dirname(Path))) for Path in self.paths]
+    self.values1, self.values2 = self.retrieve_values()
+    self.file_ids = self.metrics.report.tolist()
+    self.step_indexes = self.metrics[self.steps].tolist()
 
   def on_press(self, event):
     'on button press we will see if the mouse is over us and store some data'
@@ -81,16 +100,18 @@ class Rectangle(object):
     self.compute()
 
   def compute(self):
+  
+
     self.data_to_extract = (self.metrics[(self.metrics[self.crit2] > self.yf) & (self.metrics[self.crit2] < self.yo) &
-    (self.metrics[self.crit1] > self.xo) & (self.metrics[self.crit1] < self.xf) ])
+      (self.metrics[self.crit1] > self.xo) & (self.metrics[self.crit1] < self.xf) ])
     self.extract_snapshots(self.data_to_extract, self.steps)
-       
+
 
   def extract_snapshots(self, min_values, steps):
-      values1 = min_values[self.crit1].tolist()
-      values2 = min_values[self.crit2].tolist()
       paths = min_values[DIR].tolist()
       epochs = [os.path.basename(os.path.normpath(os.path.dirname(Path))) for Path in paths]
+      values1 = min_values[self.crit1].tolist()
+      values2 = min_values[self.crit2].tolist()
       file_ids = min_values.report.tolist()
       step_indexes = min_values[steps].tolist()
       files_out = ["epoch{}_trajectory_{}.{}_{}{:.2f}_{}{:.3f}.pdb".format(epoch, report, int(step), self.crit1.replace(" ",""),
@@ -103,9 +124,16 @@ class Rectangle(object):
           if len(f_in) == 0:
               sys.exit("Trajectory {} not found. Be aware that PELE trajectories must contain the label \'trajectory\' in their file name to be detected".format("*trajectory*_{}".format(f_id)))
           f_in = f_in[0]
+
           with open(f_in, 'r') as input_file:
               file_content = input_file.read()
-          trajectory_selected = re.search('MODEL\s+%d(.*?)ENDMDL' %int((step)/out_freq+1), file_content,re.DOTALL)
+
+          if self.adaptive and (self.steps in [self.crit1, self.crit2]):
+            model = (step % self.ad_steps)/out_freq+1
+          else:
+            model = (step)/out_freq+1
+
+          trajectory_selected = re.search('MODEL\s+%d(.*?)ENDMDL' %int(model), file_content, re.DOTALL)
 
           # Output Trajectory
           try:
@@ -115,7 +143,7 @@ class Rectangle(object):
 
           traj = []
           with open(os.path.join(output,f_out),'w') as f:
-              traj.append("MODEL     %d" %int((step)/out_freq+1))
+              traj.append("MODEL     %d" %int(model))
               try:
                   traj.append(trajectory_selected.group(1))
               except AttributeError:
@@ -125,11 +153,28 @@ class Rectangle(object):
           print("MODEL {} has been selected".format(f_out))
 
 
+  def retrieve_values(self):
+
+    if (self.steps == self.crit1) & self.adaptive:
+      values1_raw = self.metrics[self.crit1]
+      for i, (value, epoch) in enumerate(zip(values1_raw, self.epochs)):
+        self.metrics.iloc[i, self.index1-1] = (int(epoch) * self.ad_steps + value)
+
+    if (self.steps == self.crit2) & self.adaptive:
+      values1_raw = self.metrics[self.crit2]
+      for i, (value, epoch) in enumerate(zip(values1_raw, self.epochs)):
+        self.metrics.iloc[i, self.index2-1] = (int(epoch) * self.ad_steps + value)
+
+    values1 = self.metrics[self.crit1].tolist()
+    values2 = self.metrics[self.crit2].tolist()
+
+    return values1, values2
 
 
 
 
-def main(criteria1, criteria2, path=DIR, n_structs=10, sort_order="min", out_freq=FREQ, output=OUTPUT_FOLDER, numfolders=False):
+
+def main(criteria1, criteria2, ad_steps, path=DIR, n_structs=10, sort_order="min", out_freq=FREQ, output=OUTPUT_FOLDER, numfolders=False):
     """
 
       Description: Rank the traj found in the report files under path
@@ -154,7 +199,8 @@ def main(criteria1, criteria2, path=DIR, n_structs=10, sort_order="min", out_fre
         f_out: Name of the n outpu
     """
 
-    print(matplotlib.backends.backend)
+    adaptive = is_adaptive()
+
     reports = glob.glob(os.path.join(path, "*/*report*"))
     reports = glob.glob(os.path.join(path, "*report*")) if not reports else reports
     reports = filter_non_numerical_folders(reports, numfolders)
@@ -163,21 +209,23 @@ def main(criteria1, criteria2, path=DIR, n_structs=10, sort_order="min", out_fre
     except IndexError:
         raise IndexError("Not report file found. Check you are in adaptive's or Pele root folder")
 
+    # Retrieve Column Names
     steps, crit1_name, crit2_name = get_column_names(reports, STEPS, criteria1, criteria2)
+
     # Data Mining
     min_values = parse_values(reports, criteria1, criteria2, sort_order, steps, crit1_name, crit2_name)
-    print(min_values)
-    values1 = min_values[crit1_name].tolist()
-    values2 = min_values[crit2_name].tolist()
-    paths = min_values[DIR].tolist()
-    epochs = [os.path.basename(os.path.normpath(os.path.dirname(Path))) for Path in paths]
-    file_ids = min_values.report.tolist()
-    step_indexes = min_values[steps].tolist()
+
+    # Data object
+    data = DataHandler(min_values, crit1_name, crit2_name, criteria1, criteria2, steps, adaptive, ad_steps)
+
+    # Plot
     fig = plt.figure()
-    rect = Rectangle(min_values, crit1_name, crit2_name, steps)
-    cidpress = fig.canvas.mpl_connect('button_press_event', rect.on_press)
-    cidrealese= fig.canvas.mpl_connect('button_release_event', rect.on_release)
-    plt.plot(values1, values2, 'ro')
+    cidpress = fig.canvas.mpl_connect('button_press_event', data.on_press)
+    cidrealese= fig.canvas.mpl_connect('button_release_event', data.on_release)
+    plt.plot(data.values1, data.values2, 'ro')
+    plt.title('{} vs {}'.format(crit1_name, crit2_name))
+    plt.xlabel(crit1_name)
+    plt.ylabel(crit2_name)
     plt.show()
 
     
@@ -252,5 +300,5 @@ def mkdir_p(path):
 
 
 if __name__ == "__main__":
-    criteria1, criteria2, path, interval, sort_order, out_freq, output, numfolders = parse_args()
-    main(criteria1, criteria2, path, interval, sort_order, out_freq, output, numfolders)
+    criteria1, criteria2, ad_steps, path, interval, sort_order, out_freq, output, numfolders = parse_args()
+    main(criteria1, criteria2, ad_steps, path, interval, sort_order, out_freq, output, numfolders)
