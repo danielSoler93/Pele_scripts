@@ -134,9 +134,9 @@ Group of small scripts to perform pele analysis.
 
 - interactivePlot.py
     - **Description:**  <br />
-     Plot two metrics and get the structuresn on the plot wthin the rectangle drawn with the mouse.
+     Plot two metrics and get the structures within the rectangle drawn with the mouse.
     - **Requested arguments:** <br />
-    `$python interactivePlot.py column_of_report_to_be_the_xaxis column_of_report_to_be_the_yaxis pelesteps_per_epoch <br />
+    `$python interactivePlot.py column_of_report_to_be_the_xaxis column_of_report_to_be_the_yaxis pelesteps_per_epoch` <br />
     e.g. python /path/interactivePlot.py 5 6 1 (plot 5&6 with a 1 pelestep per epoch)
     - **Optional arguments:** <br />
     **--path** Path where to find pele reports. Default: folder path <br />
@@ -144,7 +144,7 @@ Group of small scripts to perform pele analysis.
     i.e: -f 4 <br />
     **Note: Important in case the output save frequency of your control file is >1** <br />
     **-o** Output Folder --> Default Criteria's name <br />
-    i.e: -o PRR_apo_Binding_energies
+    i.e: -o PRR_apo_Binding_energies <br />
     **-nm** Non numerical folders --> Default: False <br />
     i.e: -nm
     - **Output:** <br />
