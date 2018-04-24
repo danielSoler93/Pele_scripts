@@ -31,7 +31,6 @@ __email__ = "daniel.soler@nostrumbiodiscovery.com"
 ORDER = "min"
 CRITERIA = ["Binding", "Energy"]
 OUTPUT = "Structure_{}.pdb"
-N_STRUCTS = 10
 FREQ = 1
 REPORT = "report"
 TRAJ = "trajectory"
@@ -48,14 +47,12 @@ def parse_args():
     parser.add_argument("crit2", type=int, help="Second Criteria we want to rank and output the strutures for. Must be a column of the report. i.e: Binding Energy")
     parser.add_argument("ad_steps", type=int, help="Adaptive Steps i.e: self.ad_steps")
     parser.add_argument("--path", type=str, help="Path to Pele's results root folder i.e: path=/Pele/results/", default=DIR)
-    parser.add_argument("--nst", "-n", type=int, help="Number of produced structures. i.e: 20" , default=N_STRUCTS)
-    parser.add_argument("--sort", "-s", type=str, help="Look for minimum or maximum value --> Options: [min/max]. i.e: max", default=ORDER)
     parser.add_argument("--ofreq", "-f", type=int, help="Every how many steps the trajectory were outputted on PELE i.e: self.ad_steps", default=FREQ)
     parser.add_argument("--out", "-o", type=str, help="Output Path. i.e: BindingEnergies_apo", default=OUTPUT_FOLDER)
     parser.add_argument("--numfolders", "-nm", action="store_true", help="Not to parse non numerical folders")
     args = parser.parse_args()
 
-    return args.crit1, args.crit2, args.ad_steps, os.path.abspath(args.path), args.nst, args.sort, args.ofreq, args.out, args.numfolders
+    return args.crit1, args.crit2, args.ad_steps, os.path.abspath(args.path), args.ofreq, args.out, args.numfolders
 
 def is_adaptive():
   folders = glob.glob("{}/*/".format(DIR))
@@ -188,7 +185,7 @@ class DataHandler(object):
 
 
 
-def main(criteria1, criteria2, ad_steps, path=DIR, n_structs=10, sort_order="min", out_freq=FREQ, output=OUTPUT_FOLDER, numfolders=False):
+def main(criteria1, criteria2, ad_steps, path=DIR, out_freq=FREQ, output=OUTPUT_FOLDER, numfolders=False):
     """
 
       Description: Rank the traj found in the report files under path
@@ -227,7 +224,7 @@ def main(criteria1, criteria2, ad_steps, path=DIR, n_structs=10, sort_order="min
     steps, crit1_name, crit2_name = get_column_names(reports, STEPS, criteria1, criteria2)
 
     # Data Mining
-    min_values = parse_values(reports, criteria1, criteria2, sort_order, steps, crit1_name, crit2_name)
+    min_values = parse_values(reports, criteria1, criteria2, steps, crit1_name, crit2_name)
 
     # Data object
     data = DataHandler(min_values, crit1_name, crit2_name, criteria1, criteria2, steps, adaptive, ad_steps)
@@ -244,7 +241,7 @@ def main(criteria1, criteria2, ad_steps, path=DIR, n_structs=10, sort_order="min
 
     
 
-def parse_values(reports, criteria1, criteria2, sort_order, steps, crit1_name, crit2_name):
+def parse_values(reports, criteria1, criteria2,  steps, crit1_name, crit2_name):
     """
 
        Description: Parse the 'reports' and create a sorted array
@@ -314,5 +311,5 @@ def mkdir_p(path):
 
 
 if __name__ == "__main__":
-    criteria1, criteria2, ad_steps, path, interval, sort_order, out_freq, output, numfolders = parse_args()
-    main(criteria1, criteria2, ad_steps, path, interval, sort_order, out_freq, output, numfolders)
+    criteria1, criteria2, ad_steps, path, out_freq, output, numfolders = parse_args()
+    main(criteria1, criteria2, ad_steps, path, out_freq, output, numfolders)
