@@ -100,11 +100,25 @@ class DataHandler(object):
     self.compute()
 
   def compute(self):
-  
-
-    self.data_to_extract = (self.metrics[(self.metrics[self.crit2] > self.yf) & (self.metrics[self.crit2] < self.yo) &
-      (self.metrics[self.crit1] > self.xo) & (self.metrics[self.crit1] < self.xf) ])
+    self.retrieve_data()
     self.extract_snapshots(self.data_to_extract, self.steps)
+
+  def retrieve_data(self):
+    if (self.xf > self.xo) and (self.yf < self.yo):
+      self.data_to_extract = (self.metrics[(self.metrics[self.crit2] > self.yf) & (self.metrics[self.crit2] < self.yo) &
+      (self.metrics[self.crit1] > self.xo) & (self.metrics[self.crit1] < self.xf) ])
+
+    elif (self.xf > self.xo) and (self.yf > self.yo):
+      self.data_to_extract = (self.metrics[(self.metrics[self.crit2] < self.yf) & (self.metrics[self.crit2] > self.yo) &
+      (self.metrics[self.crit1] > self.xo) & (self.metrics[self.crit1] < self.xf) ])
+
+    elif (self.xf < self.xo) and (self.yf > self.yo):
+      self.data_to_extract = (self.metrics[(self.metrics[self.crit2] < self.yf) & (self.metrics[self.crit2] > self.yo) &
+      (self.metrics[self.crit1] < self.xo) & (self.metrics[self.crit1] > self.xf) ])
+
+    elif (self.xf < self.xo) and (self.yf < self.yo):
+      self.data_to_extract = (self.metrics[(self.metrics[self.crit2] > self.yf) & (self.metrics[self.crit2] < self.yo) &
+      (self.metrics[self.crit1] < self.xo) & (self.metrics[self.crit1] > self.xf) ])
 
 
   def extract_snapshots(self, min_values, steps):
