@@ -131,3 +131,21 @@ Group of small scripts to perform pele analysis.
     **--threshold** Print all cluster structures that are below this threshold --> default: None (print strctures selected) <br />
     - **Output:** <br />
 	The script will create a folder (if passed in the output_folder option) and inside you will have the requested pdb files. The output_folder option has to contain the name of the output files as well as the output folder (if desired), i.e. path/cluster.pdb --> cluster/cluster_1.pdb, cluster/cluster_2.pdb, cluster/cluster_3.pdb, etc.
+
+- interactivePlot.py
+    - **Description:**  <br />
+     Plot two metrics and get the structuresn on the plot wthin the rectangle drawn with the mouse.
+    - **Requested arguments:** <br />
+    `$python interactivePlot.py column_of_report_to_be_the_xaxis column_of_report_to_be_the_yaxis pelesteps_per_epoch <br />
+    e.g. python /path/interactivePlot.py 5 6 1 (plot 5&6 with a 1 pelestep per epoch)
+    - **Optional arguments:** <br />
+    **--path** Path where to find pele reports. Default: folder path <br />
+    **-f** frequency the Pele's control file save the output --> Default:1. <br />
+    i.e: -f 4 <br />
+    **Note: Important in case the output save frequency of your control file is >1** <br />
+    **-o** Output Folder --> Default Criteria's name <br />
+    i.e: -o PRR_apo_Binding_energies
+    **-nm** Non numerical folders --> Default: False <br />
+    i.e: -nm
+    - **Output:** <br />
+    The script will create a folder (if passed in the output_folder option) and inside you will have the pdb files under the area selcted on the plot.
