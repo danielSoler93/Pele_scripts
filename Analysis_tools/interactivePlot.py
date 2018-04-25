@@ -2,6 +2,7 @@
 
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.widgets  import RectangleSelector
 import numpy as np
 import os
 import errno
@@ -65,7 +66,7 @@ def is_adaptive():
 
 class DataHandler(object):
 
-  def __init__(self, metrics, crit1, crit2, index1, index2, steps, adaptive, ad_steps):
+  def __init__(self, metrics, crit1, crit2, index1, index2, steps, adaptive, ad_steps, axis):
     self.metrics = metrics
     self.crit1 = crit1
     self.crit2 = crit2
@@ -74,6 +75,7 @@ class DataHandler(object):
     self.steps = steps
     self.adaptive = adaptive
     self.ad_steps = ad_steps
+    self.axis = axis
     self.descompose_values()
 
 
@@ -85,16 +87,17 @@ class DataHandler(object):
     self.step_indexes = self.metrics[self.steps].tolist()
 
   def on_press(self, event):
-    'on button press we will see if the mouse is over us and store some data'
+    self.limits_start = [self.axis.get_xlim(), self.axis.get_ylim()]
     if not event.inaxes: return
     self.xo, self.yo = event.xdata, event.ydata
 
    
   def on_release(self, event):
-    'on release we reset the press data'
+    self.limits_end = [self.axis.get_xlim(), self.axis.get_ylim()]
     if not event.inaxes: return
     self.xf, self.yf = event.xdata, event.ydata
-    self.compute()
+    if self.limits_start == self.limits_end:
+      self.compute()
 
   def compute(self):
     self.retrieve_data()
@@ -116,6 +119,8 @@ class DataHandler(object):
     elif (self.xf < self.xo) and (self.yf < self.yo):
       self.data_to_extract = (self.metrics[(self.metrics[self.crit2] > self.yf) & (self.metrics[self.crit2] < self.yo) &
       (self.metrics[self.crit1] < self.xo) & (self.metrics[self.crit1] > self.xf) ])
+    else:
+      self.data_to_extract = pd.DataFrame(columns=list(self.metrics))
 
 
   def extract_snapshots(self, min_values, steps):
@@ -182,7 +187,17 @@ class DataHandler(object):
     return values1, values2
 
 
+def line_select_callback(eclick, erelease):
+    x1, y1 = eclick.xdata, eclick.ydata
+    x2, y2 = erelease.xdata, erelease.ydata
 
+
+
+def toggle_selector(event):
+    if event.key in ['Q', 'q'] and toggle_selector.RS.active:
+        toggle_selector.RS.set_active(False)
+    if event.key in ['A', 'a'] and not toggle_selector.RS.active:
+        toggle_selector.RS.set_active(False)
 
 
 def main(criteria1, criteria2, ad_steps, path=DIR, out_freq=FREQ, output=OUTPUT_FOLDER, numfolders=False):
@@ -226,17 +241,34 @@ def main(criteria1, criteria2, ad_steps, path=DIR, out_freq=FREQ, output=OUTPUT_
     # Data Mining
     min_values = parse_values(reports, criteria1, criteria2, steps, crit1_name, crit2_name)
 
-    # Data object
-    data = DataHandler(min_values, crit1_name, crit2_name, criteria1, criteria2, steps, adaptive, ad_steps)
 
-    # Plot
-    fig = plt.figure()
-    cidpress = fig.canvas.mpl_connect('button_press_event', data.on_press)
-    cidrealese= fig.canvas.mpl_connect('button_release_event', data.on_release)
+
+    # Figure
+    fig, current_ax = plt.subplots()
+
+    # Plot data
+    data = DataHandler(min_values, crit1_name, crit2_name, criteria1, criteria2, steps, adaptive, ad_steps, current_ax)
+
+    # Plot axis  
     plt.plot(data.values1, data.values2, 'ro')
     plt.title('{} vs {}'.format(crit1_name, crit2_name))
     plt.xlabel(crit1_name)
     plt.ylabel(crit2_name)
+
+
+    # Plot Callbacks
+    cidpress = fig.canvas.mpl_connect('button_press_event', data.on_press)
+    cidrealese= fig.canvas.mpl_connect('button_release_event', data.on_release)
+
+
+    toggle_selector.RS = RectangleSelector(current_ax, line_select_callback,
+                         drawtype='box', useblit=True,
+                         button=[1, 3],  # don't use middle button
+                         minspanx=5, minspany=5,
+                         spancoords='pixels',
+                         interactive=False)
+
+    # Show Plot on screen
     plt.show()
 
     
