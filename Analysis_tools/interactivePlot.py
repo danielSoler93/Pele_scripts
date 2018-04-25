@@ -227,13 +227,8 @@ def main(criteria1, criteria2, ad_steps, path=DIR, out_freq=FREQ, output=OUTPUT_
 
     adaptive = is_adaptive()
 
-    reports = glob.glob(os.path.join(path, "*/*report*"))
-    reports = glob.glob(os.path.join(path, "*report*")) if not reports else reports
-    reports = filter_non_numerical_folders(reports, numfolders)
-    try:
-        reports[0]
-    except IndexError:
-        raise IndexError("Not report file found. Check you are in adaptive's or Pele root folder")
+    reports = find_reports(path, numfolders)
+
 
     # Retrieve Column Names
     steps, crit1_name, crit2_name = get_column_names(reports, STEPS, criteria1, criteria2)
@@ -259,8 +254,6 @@ def main(criteria1, criteria2, ad_steps, path=DIR, out_freq=FREQ, output=OUTPUT_
     # Plot Callbacks
     cidpress = fig.canvas.mpl_connect('button_press_event', data.on_press)
     cidrealese= fig.canvas.mpl_connect('button_release_event', data.on_release)
-
-
     toggle_selector.RS = RectangleSelector(current_ax, line_select_callback,
                          drawtype='box', useblit=True,
                          button=[1, 3],  # don't use middle button
@@ -271,7 +264,15 @@ def main(criteria1, criteria2, ad_steps, path=DIR, out_freq=FREQ, output=OUTPUT_
     # Show Plot on screen
     plt.show()
 
-    
+def find_reports(path, numfolders):
+    reports = glob.glob(os.path.join(path, "*/*report*"))
+    reports = glob.glob(os.path.join(path, "*report*")) if not reports else reports
+    reports = filter_non_numerical_folders(reports, numfolders)
+    try:
+        reports[0]
+    except IndexError:
+        raise IndexError("Not report file found. Check you are in adaptive's or Pele root folder")
+    return reports
 
 def parse_values(reports, criteria1, criteria2,  steps, crit1_name, crit2_name):
     """
