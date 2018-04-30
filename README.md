@@ -151,3 +151,33 @@ Group of small scripts to perform pele analysis.
     i.e: -nm
     - **Output:** <br />
     The script will create a folder (if passed in the output_folder option) and inside you will have the pdb files under the area selcted on the plot.
+
+- counter.py
+    - **Description:**  <br />
+     Plot a histogram of how many steps inside each interval of the chosen metric.
+    - **Requested arguments:** <br />
+    `$python counter.py metric_column_number number_of_bins` <br />
+    e.g. python /path/interactivePlot.py 6 10 (create histogram of metric number 6 with 10 intervals)
+    - **Optional arguments:** <br />
+    **-o** OUT, -o OUT  Output Path. <br />
+    i.e: BindingEnergies_apo <br />
+    **-nm**  Only parse numerical folders <br />
+    i.e: -nm <br />
+    - **Output:** <br />
+    The script will create a hist.png with the histogram.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
