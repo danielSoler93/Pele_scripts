@@ -29,7 +29,8 @@ FREQ = 1
 REPORT = "report"
 ACCEPTED_STEPS = 'numberOfAcceptedPeleSteps'
 PATH = os.path.abspath(os.getcwd())
-STEPS=3
+STEPS = 3
+OUTPUT_FOLDER = 'RangeValues'
 
 def parse_args():
 
@@ -38,7 +39,7 @@ def parse_args():
     parser.add_argument("max", type=float, help="Maximum ValueRange i.e: 0")
     parser.add_argument("criteria", type=str, nargs='+', help="Criteria we want to rank and output the strutures for. Must be a column of the report. i.e: Binding Energy")
     parser.add_argument("--ofreq", "-f", type=int, help="Every how many steps the trajectory were outputted on PELE i.e: 4", default=FREQ)
-    parser.add_argument("--out", "-o", type=str, help="Output Path i.e: BE_apo", default="".join(CRITERIA))
+    parser.add_argument("--out", "-o", type=str, help="Output Path i.e: BE_apo", default=OUTPUT_FOLDER)
     parser.add_argument("--numfolders", "-nm", action="store_true", help="Not to parse non numerical folders")
     args = parser.parse_args()
     return args.min, args.max, " ".join(args.criteria), args.ofreq, args.out, args.numfolders
