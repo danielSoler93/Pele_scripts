@@ -8,7 +8,8 @@ import pandas as pd
 import glob
 import re
 import sys
-import clusterAdaptiveRun as cl
+import Pele_scripts.Utilities.clusterAdaptiveRun as cl
+
 
 """
 
