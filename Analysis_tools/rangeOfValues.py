@@ -1,5 +1,6 @@
 import os
 import argparse
+import warnings
 import pandas as pd
 import glob
 import re
@@ -141,7 +142,11 @@ def parse_values(reports, criteria, min_value, max_value, steps):
     values = pd.DataFrame.from_items(INITIAL_DATA)
     for file in reports:
         report_number = os.path.basename(file).split("_")[-1]
-        data = pd.read_csv(file, sep='    ', engine='python')
+        try:
+            data = pd.read_csv(file, sep='    ', engine='python')
+        except pd.errors.EmptyDataError:
+            warnings.warn("Report {} corrupted".format(file), UserWarning)
+            continue
         report_values = data.loc[:, [steps, criteria]]
         report_values.insert(0, PATH, [file]*report_values[criteria].size)
         report_values.insert(1, REPORT, [report_number]*report_values[criteria].size)
