@@ -11,6 +11,7 @@ import pandas as pd
 import glob
 import re
 import sys
+import warnings
 
 """
 
@@ -303,7 +304,11 @@ def parse_values(reports, criteria1, criteria2,  steps, crit1_name, crit2_name):
     min_values = pd.DataFrame.from_items(INITIAL_DATA)
     for file in reports:
         report_number = os.path.basename(file).split("_")[-1]
-        data = pd.read_csv(file, sep='    ', engine='python')
+        try:
+            data = pd.read_csv(file, sep='    ', engine='python')
+        except pd.errors.EmptyDataError:
+            warnings.warn("Report {} corrupted".format(file), UserWarning)
+            continue
         if steps == crit1_name:
           selected_data = data.iloc[:, [2, criteria2-1]]
         elif steps == crit1_name:
