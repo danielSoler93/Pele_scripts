@@ -78,6 +78,10 @@ Group of small scripts to perform pele analysis.
     - **Optional arguments:** <br />
     **--zcol** Column of a metric to use as color instead of the epoch --> default: None (use epoch as color) <br />
     **--traj_range** Range of trajectories to plot (has to be contigous) --> Default: plot all trajectories
+    **-points** Plot using points
+    **-lines** Plot using lines
+    **-traj_col** Color differently each trajectory
+
     - **Output:** <br />
 	The script prints a gnuplot valid command that can be piped to gnuplot or pasted inside a gnuplot script for tweaking
 
@@ -90,6 +94,7 @@ Group of small scripts to perform pele analysis.
     - **Optional arguments:** <br />
     **-o** "output_folder" (name of the folder where to store the pdb file) --> default: "" (store in current folder) <br />
     **--name** Name of the file to store the trajectory --> Default: "pathway.pdb"
+    **--top** Name of the pdb topology for loading non-pdb trajectories
     - **Output:** <br />
 	The script will create a folder (if asked via the -o option) and inside you will have the file containing the trajectory that lead to snapshot of interest. If the filename already exists, a number will be appended to distinguish it, i.e. pathway.pdb --> pathway_1.pdb
 
