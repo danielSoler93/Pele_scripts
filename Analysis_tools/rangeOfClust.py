@@ -5,7 +5,7 @@ import shutil
 import glob
 import re
 import sys
-import Pele_scripts.Utilities.clusterAdaptiveRun as cl
+import master
 
 
 """

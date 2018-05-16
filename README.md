@@ -20,6 +20,7 @@ Group of small scripts to perform pele analysis.
     `$python best_structs.py <criteria (column_number or column_name)>` <br />
     e.g.1. python /home/dsoler/best_structs.py Binding Energy. <br />
     e.g.2. python /home/dsoler/best_structs.py 5. <br />
+    e.g.3. python /home/dsoler/best_structs.py -n 20 -f 1 -o Dani distance
     **Note: The criteria must be one of the report's column name/number after the column numberOfAcceptedSteps.**
     - **Optional arguments:** <br />
     **-s** "max or min" ( max to order from higher to lower values, min from lower to higher) --> Default: min. <br />
@@ -42,8 +43,9 @@ Group of small scripts to perform pele analysis.
     Parse all the reports under the current directory and sort them all by the chosen criteria and output the value range from [users_minimum_value:users_max_value]. **Must be run from adaptive's root folder or Pele's result folder**
     - **Requested arguments:** <br />
     `$python best_structs.py <min_value> <max_value> <criteria> <br />`
-    e.g.1. python /home/dsoler/best_structs.py -50 -40 Binding Energy. <br />
-    e.g.2 python /home/dsoler/best_structs.py -50 -40 5. <br />
+    e.g.1. python /home/dsoler/rangeOfValues.py -50 -40 Binding Energy. <br />
+    e.g.2 python /home/dsoler/rangeOfValues.py -50 -40 5. <br />
+    e.g.3 python /home/dsoler/rangeOfValues.py -o Dani -f 1 -50 -40 5. <br />
     **Note: The criteria must be one of the report's metric names/number.**
     - **Optional arguments:** <br />
     **-f** frequency the Pele's control file save the output --> Default:1. <br />
@@ -154,3 +156,33 @@ Group of small scripts to perform pele analysis.
     i.e: -nm
     - **Output:** <br />
     The script will create a folder (if passed in the output_folder option) and inside you will have the pdb files under the area selcted on the plot.
+
+- counter.py
+    - **Description:**  <br />
+     Plot a histogram of how many steps inside each interval of the chosen metric.
+    - **Requested arguments:** <br />
+    `$python counter.py metric_column_number number_of_bins` <br />
+    e.g. python /path/interactivePlot.py 6 10 (create histogram of metric number 6 with 10 intervals)
+    - **Optional arguments:** <br />
+    **-o** OUT, -o OUT  Output Path. <br />
+    i.e: BindingEnergies_apo <br />
+    **-nm**  Only parse numerical folders <br />
+    i.e: -nm <br />
+    - **Output:** <br />
+    The script will create a hist.png with the histogram.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
